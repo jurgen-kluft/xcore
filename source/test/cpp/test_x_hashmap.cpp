@@ -1,5 +1,5 @@
 #include "xbase\x_allocator.h"
-#include "xbase\x_hashmap.h"
+#include "xcore\x_hashmap.h"
 
 #include "xunittest\xunittest.h"
 

@@ -92,7 +92,7 @@ namespace xcore
 	};
 };
 
-#include "xbase\private\x_set_inline.h"
+#include "xcore\private\x_set_inline.h"
 
 #endif	///< __XBASE_SET_H__
 

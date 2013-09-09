@@ -94,7 +94,7 @@ namespace xcore
 	};
 };
 
-#include "xbase\private\x_map_inline.h"
+#include "xcore\private\x_map_inline.h"
 
 
 #endif	///< __XBASE_MAP_H__

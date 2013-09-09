@@ -1,6 +1,6 @@
 #include "xbase\x_debug.h"
-#include "xbase\x_vector.h"
-#include "xbase\x_list.h"
+#include "xcore\x_vector.h"
+#include "xcore\x_list.h"
 #include "xbase\x_idx_allocator.h"
 
 #include "xunittest\xunittest.h"

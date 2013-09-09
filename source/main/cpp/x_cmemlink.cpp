@@ -1,4 +1,4 @@
-#include "xbase\x_cmemlink.h"
+#include "xcore\x_cmemlink.h"
 #include "xbase\x_memory_std.h"
 #include "xbase\private\x_std.h"
 

@@ -5,7 +5,7 @@
 #pragma once 
 #endif
 
-#include "xbase\x_memlink.h"
+#include "xcore\x_memlink.h"
 
 namespace xcore
 {

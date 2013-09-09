@@ -1,5 +1,5 @@
 // x_ilist.h - xCore intrusive doubly linked list requiring inheritance
-#include "xbase\x_ilist.h"
+#include "xcore\x_ilist.h"
 
 namespace xcore
 {

@@ -1,4 +1,4 @@
-#include "xbase\x_string.h"
+#include "xcore\x_string.h"
 
 #include "xunittest\xunittest.h"
 

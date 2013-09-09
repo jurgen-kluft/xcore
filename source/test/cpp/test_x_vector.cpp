@@ -1,5 +1,5 @@
-#include "xbase\x_vector.h"
-#include "xbase\x_string.h"
+#include "xcore\x_vector.h"
+#include "xcore\x_string.h"
 
 #include "xunittest\xunittest.h"
 

@@ -6,7 +6,7 @@
 #endif
 
 #include "xbase\x_memory_std.h"
-#include "xbase\x_cmemlink.h"
+#include "xcore\x_cmemlink.h"
 
 namespace xcore
 {

@@ -8,8 +8,8 @@
 #include "xbase\x_string_std.h"
 #include "xbase\x_memory_std.h"
 #include "xbase\x_allocator.h"
-#include "xbase\x_string.h"
-#include "xbase\private\x_string_buffers.h"
+#include "xcore\x_string.h"
+#include "xcore\private\x_string_buffers.h"
 
 /**
  * xCore namespace

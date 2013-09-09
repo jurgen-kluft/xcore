@@ -1,7 +1,6 @@
-#include "xbase\x_target.h"
-#include "xbase\x_allocator.h"
 #include "xbase\x_base.h"
-#include "xbase\x_string.h"
+#include "xbase\x_allocator.h"
+#include "xcore\x_string.h"
 
 namespace xcore
 {
@@ -12,7 +11,6 @@ namespace xcore
 		sXBaseAllocator = allocator;
 		
 		// Initialize the string classes with this allocator.
-	
 #ifndef SPU
 		xstring::sSetAllocator(allocator);
 		xstring_tmp::sSetAllocator(allocator);
@@ -26,6 +24,12 @@ namespace xcore
 
 	void			x_Exit()
 	{
+		// Unbind the allocator from the string classes
+#ifndef SPU
+		xstring::sSetAllocator(NULL);
+		xstring_tmp::sSetAllocator(NULL);
+#endif
+
 		sXBaseAllocator = NULL;
 	}
 };

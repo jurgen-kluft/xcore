@@ -17,7 +17,7 @@
 #include "xbase\x_debug.h"
 #include "xbase\x_memory_std.h"
 
-#include "xbase\private\x_string_buffers.h"
+#include "xcore\private\x_string_buffers.h"
 
 /**
  * xCore namespace
@@ -424,7 +424,7 @@ namespace xcore
 		xccstring&			operator =				(const char* str);												///< Assign a 'C' string to this string
 	};
 
-	#include "xbase\private\x_string_inline.h"
+	#include "xcore\private\x_string_inline.h"
 }
 
 #endif	///< __XBASE_XSTRING_H__

@@ -1,4 +1,4 @@
-#include "xbase\x_pqueue.h"
+#include "xcore\x_pqueue.h"
 
 #include "xunittest\xunittest.h"
 
