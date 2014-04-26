@@ -86,7 +86,7 @@ namespace xcore
 		ASSERT (data() || !n);
 		ASSERT (xcmemlink::begin() || !n);
 		ASSERT (start >= begin() && start + n <= end());
-		x_memmove(start + n, start, end() - start);
+		x_memmove(start + n, start, (u32)(end() - start));
 	}
 
 	/// Shifts the data in the linked block from \p start + \p n to \p start.
@@ -96,7 +96,7 @@ namespace xcore
 		ASSERT (data() || !n);
 		ASSERT (xcmemlink::begin() || !n);
 		ASSERT (start >= begin() && start + n <= end());
-		x_memmove(start, start + n, end() - start - n);
+		x_memmove(start, start + n, (u32)(end() - start - n));
 	}
 
 }

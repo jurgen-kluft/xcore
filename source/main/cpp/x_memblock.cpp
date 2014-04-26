@@ -169,7 +169,7 @@ namespace xcore
 	/// Shifts the data in the linked block from \p start to \p start + \p n.
 	xmemblock::iterator xmemblock::insert (iterator start, u32 n)
 	{
-		const u32 ip = start - begin();
+		const u32 ip = (u32)(start - begin());
 		ASSERT (ip <= size());
 		resize (size() + n, false);
 		xmemlink::insert (iat(ip), n);
@@ -179,7 +179,7 @@ namespace xcore
 	/// Shifts the data in the linked block from \p start + \p n to \p start.
 	xmemblock::iterator xmemblock::erase (iterator start, u32 n)
 	{
-		const u32 ep = start - begin();
+		const u32 ep = (u32)(start - begin());
 		ASSERT (ep + n <= size());
 		xmemlink::erase (start, n);
 		xmemlink::resize (size() - n);

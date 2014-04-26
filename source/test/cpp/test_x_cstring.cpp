@@ -16,7 +16,7 @@ UNITTEST_SUITE_BEGIN(xcstring)
 		UNITTEST_FIXTURE_TEARDOWN()
 		{
 		}
-
+		
 		char	sStrBuffer1[34];
 		char	sStrBuffer2[34];
 		char	sStrBuffer3[34];

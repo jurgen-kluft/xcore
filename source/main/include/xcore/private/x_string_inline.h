@@ -352,7 +352,7 @@ s32					xstring_const_base<T>::find(char inChar, s32 inPosition, s32 inCharNum) 
 	const char* pos = x_strFindInSubstr(c_str(), inChar, inPosition, inCharNum);
 	if (pos==NULL)
 		return -1;
-	return (s32)pos - (s32)c_str();
+	return (s32)(pos - c_str());
 }
 
 //------------------------------------------------------------------------------
@@ -367,7 +367,7 @@ s32					xstring_const_base<T>::find(const char* inString, s32 inPosition, s32 in
 	const char* pos = x_strFindInSubstr(c_str(), inString, inPosition, inCharNum);
 	if (pos==NULL)
 		return -1;
-	return (s32)pos - (s32)c_str();
+	return (s32)(pos - c_str());
 }
 
 //------------------------------------------------------------------------------
@@ -381,7 +381,7 @@ s32					xstring_const_base<T>::findNoCase(char inChar, s32 inPosition, s32 inCha
 	ASSERT((inPosition+inCharNum) <= n);
 	const char* str = c_str();
 	const char* find_pos = x_strFindNoCaseInSubstr(str, inChar, inPosition, inCharNum);
-	return (find_pos) ? (find_pos - str) : -1;
+	return (find_pos) ? (s32)(find_pos - str) : -1;
 }
 
 //------------------------------------------------------------------------------
@@ -395,7 +395,7 @@ s32					xstring_const_base<T>::findNoCase(const char* inString, s32 inPosition, 
 	ASSERT((inPosition+inCharNum) <= n);
 	const char* str = c_str();
 	const char* find_pos = x_strFindNoCaseInSubstr(str, inString, inPosition, inCharNum);
-	return (find_pos) ? (find_pos - str) : -1;
+	return (find_pos) ? (s32)(find_pos - str) : -1;
 }
 
 //------------------------------------------------------------------------------
@@ -407,7 +407,7 @@ s32					xstring_const_base<T>::rfind(char inChar, s32 inPosition, s32 inLen) con
 	inLen = (inLen==-1) ? (inPosition+1) : inLen;
 	ASSERT(inPosition>=0 && inPosition<getLength());
 	const char* pos = x_strRFind(c_str(), inChar, inPosition, inLen);
-	return pos==NULL ? (-1) : (pos-c_str());
+	return pos==NULL ? (-1) : (s32)(pos-c_str());
 }
 
 //------------------------------------------------------------------------------
@@ -419,7 +419,7 @@ s32					xstring_const_base<T>::rfind(const char* inString, s32 inPosition, s32 i
 	inLen = (inLen==-1) ? (inPosition+1) : inLen;
 	ASSERT(inPosition>=0 && inPosition<getLength());
 	const char* pos = x_strRFind(c_str(), inString, inPosition, inLen);
-	return pos==NULL ? (-1) : (pos-c_str());
+	return pos==NULL ? (-1) : (s32)(pos-c_str());
 }
 
 //------------------------------------------------------------------------------
@@ -428,7 +428,7 @@ template<class T>
 s32					xstring_const_base<T>::findOneOf(const char* inCharSet, s32 inPosition) const
 {
 	const char* pos = x_strFindOneOf(c_str(), inCharSet, inPosition, getLength());
-	return pos==NULL ? (-1) : (pos-c_str());
+	return pos==NULL ? (-1) : (s32)(pos-c_str());
 }
 
 //------------------------------------------------------------------------------
@@ -441,7 +441,7 @@ template<class T>
 s32					xstring_const_base<T>::rfindOneOf(const char* inCharSet, s32 inPosition) const
 {
 	const char* pos = x_strRFindOneOf(c_str(), inCharSet, inPosition, getLength());
-	return pos==NULL ? (-1) : (pos-c_str());
+	return pos==NULL ? (-1) : (s32)(pos-c_str());
 }
 
 //------------------------------------------------------------------------------

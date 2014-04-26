@@ -20,17 +20,17 @@ UNITTEST_SUITE_DECLARE(xCoreUnitTest, xilist);
 UNITTEST_SUITE_DECLARE(xCoreUnitTest, xset);
 UNITTEST_SUITE_DECLARE(xCoreUnitTest, xstring);
 UNITTEST_SUITE_DECLARE(xCoreUnitTest, xstring_tmp);
-UNITTEST_SUITE_DECLARE(xCoreUnitTest, xtriemap);
+//UNITTEST_SUITE_DECLARE(xCoreUnitTest, xtriemap);
 UNITTEST_SUITE_DECLARE(xCoreUnitTest, xvector);
 
 namespace xcore
 {
 	class UnitTestAllocator : public UnitTest::Allocator
 	{
-		xcore::x_iallocator*	mAllocator;
+		x_iallocator*	mAllocator;
 	public:
-						UnitTestAllocator(xcore::x_iallocator* allocator)	{ mAllocator = allocator; }
-		virtual void*	Allocate(int size)									{ return mAllocator->allocate(size, 4); }
+						UnitTestAllocator(x_iallocator* allocator)			{ mAllocator = allocator; }
+		virtual void*	Allocate(size_t size)								{ return mAllocator->allocate(size, 4); }
 		virtual void	Deallocate(void* ptr)								{ mAllocator->deallocate(ptr); }
 	};
 
@@ -42,13 +42,13 @@ namespace xcore
 
 		virtual const char*	name() const										{ return "xcore unittest test heap allocator"; }
 
-		virtual void*		allocate(u32 size, u32 alignment)
+		virtual void*		allocate(xsize_t size, u32 alignment)
 		{
 			UnitTest::IncNumAllocations();
 			return mAllocator->allocate(size, alignment);
 		}
 
-		virtual void*		reallocate(void* mem, u32 size, u32 alignment)
+		virtual void*		reallocate(void* mem, xsize_t size, u32 alignment)
 		{
 			if (mem==NULL)
 				return allocate(size, alignment);

@@ -505,7 +505,7 @@ namespace xcore
 	template <typename T>
 	inline typename xvector<T>::iterator xvector<T>::insert_space (iterator& ip, u32 n)
 	{
-		const u32 ipmi = (ip.p - m_Data.begin()) / m_ItemSizeAligned;
+		const u32 ipmi = (u32)((ip.p - m_Data.begin()) / m_ItemSizeAligned);
 		reserve (size() + n, false);
 		return (iterator (&m_Data, (T*)m_Data.insert (m_Data.iat(ipmi), n * m_ItemSizeAligned), m_ItemSizeAligned));
 	}
