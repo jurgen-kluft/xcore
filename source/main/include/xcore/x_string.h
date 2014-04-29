@@ -5,12 +5,6 @@
 #pragma once 
 #endif
 
-/**
- * TODO
- *==============================================================================
- * - Add support for xwchar strings (2 byte char)
- */
-
 //==============================================================================
 // INCLUDES
 //==============================================================================
@@ -158,9 +152,6 @@ namespace xcore
 		void				mid						(s32 inPosition, xcstring& outMid, s32 inNum = -1) const;		///< Return a string containing <inNum> characters from this string, starting at <inPosition>
 		void				substring				(s32 inPosition, xcstring& outSubstring, s32 inNum) const;
 		void				substring				(s32 inPosition, xcstring& outSubstring) const;
-
-
-
 
 		bool				splitOn					(const char inChar, xcstring& outLeft, xcstring& outRight) const;	///< Split string on first of occurrence of <ch>, returns result in <outLeft> and <outRight>
 		bool				rsplitOn				(const char inChar, xcstring& outLeft, xcstring& outRight) const;	///< Split string on last of occurrence of <ch>, returns result in <outLeft> and <outRight>

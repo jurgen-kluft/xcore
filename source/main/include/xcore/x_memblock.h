@@ -49,7 +49,7 @@ namespace xcore
 		explicit				xmemblock (x_iallocator*, const xcmemlink& b);
 		explicit				xmemblock (x_iallocator*, const xmemlink& b);
 								xmemblock (x_iallocator*, const xmemblock& b);
-                                xmemblock (const xmemblock& b);
+								xmemblock (const xmemblock& b);
 
 								~xmemblock (void);
 
@@ -72,7 +72,6 @@ namespace xcore
 		void					manage (x_iallocator* a, void* p, u32 n);
 		void					deallocate (void);
 		void					copy_link (x_iallocator* a);
-	//	void					copy_link (); // use the existing member allocator
 
 		inline const xmemblock&	operator= (const xcmemlink& l)				{ assign (l); return (*this); }
 		inline const xmemblock&	operator= (const xmemlink& l)				{ assign (l); return (*this); }
