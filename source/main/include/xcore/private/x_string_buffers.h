@@ -6,8 +6,8 @@
 #endif
 
 #include "xbase\x_debug.h"
-
-#include "xbase\x_string_std.h"
+#include "xbase\x_allocator.h"
+#include "xbase\x_string_ascii.h"
 
 /**
  * xCore namespace

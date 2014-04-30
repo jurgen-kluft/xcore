@@ -5,10 +5,11 @@
 //==============================================================================
 #include "xbase\x_debug.h"
 #include "xbase\x_integer.h"
-#include "xbase\x_string_std.h"
+#include "xbase\x_string_ascii.h"
 #include "xbase\x_memory_std.h"
 #include "xbase\x_allocator.h"
 #include "xcore\x_string.h"
+
 #include "xcore\private\x_string_buffers.h"
 
 /**
@@ -16,98 +17,6 @@
  */
 namespace xcore
 {
-	static x_iallocator*	sStringHeapAllocator = NULL;
-	static x_iallocator*	sStringTempAllocator = NULL;
-
-	void	xstring::sSetAllocator(x_iallocator* allocator)
-	{
-		sStringHeapAllocator = allocator;
-	}
-
-	void	xstring_tmp::sSetAllocator(x_iallocator* allocator)
-	{
-		sStringTempAllocator = allocator;
-	}
-
-	//==============================================================================
-	//==============================================================================
-	//==============================================================================
-	// xstring_buffer_tmp
-	//==============================================================================
-	//==============================================================================
-	//==============================================================================
-	xstring_buffer_tmp::xstring_buffer_tmp()
-	:mString(NULL)
-	,mLength(0)
-	,mMaxLength(0)
-	{
-	}
-
-	xstring_buffer_tmp::xstring_buffer_tmp(s32 length)
-	:mLength(0)
-	,mMaxLength(length)
-	{
-		mString = (char*)sStringTempAllocator->allocate(length + 2, X_ALIGNMENT_DEFAULT);
-		terminateWithZero();
-	}
-
-	xstring_buffer_tmp::xstring_buffer_tmp(const char* str)
-	:mLength(x_strlen(str))
-	,mMaxLength(mLength)
-	{
-		mString = (char*)sStringTempAllocator->allocate(mLength + 2, X_ALIGNMENT_DEFAULT);
-		x_memcpy(mString, str, mLength);
-		terminateWithZero();
-	}
-
-	xstring_buffer_tmp::xstring_buffer_tmp(s32 length, const char* str)
-	:mLength(length)
-	,mMaxLength(length)
-	{
-		mString = (char*)sStringTempAllocator->allocate(mLength + 2, X_ALIGNMENT_DEFAULT);
-		x_memcpy(mString, str, mLength);
-		terminateWithZero();
-	}
-
-	xstring_buffer_tmp::xstring_buffer_tmp(s32 lengthA, const char* strA, s32 lengthB, const char* strB)
-		: mLength(lengthA + lengthB)
-		, mMaxLength(lengthA + lengthB)
-	{
-		mString = (char*)sStringTempAllocator->allocate(mLength + 2, X_ALIGNMENT_DEFAULT);
-		x_memcpy(mString, strA, lengthA);
-		x_memcpy(mString + lengthA, strB, lengthB);
-		terminateWithZero();
-	}
-
-	xstring_buffer_tmp::xstring_buffer_tmp(const char* formatString, const x_va_list& args)
-	{
-		ASSERT(formatString);
-		mLength = x_vcprintf(formatString, args);
-		mString = (char*)sStringTempAllocator->allocate(mLength + 2, X_ALIGNMENT_DEFAULT);
-		x_vsprintf(mString, mLength, formatString, args);
-		mMaxLength = mLength;
-		terminateWithZero();
-	}
-
-	xstring_buffer_tmp::xstring_buffer_tmp(const char* formatString, const x_va& v1, const x_va& v2, const x_va& v3, const x_va& v4, const x_va& v5, const x_va& v6, const x_va& v7, const x_va& v8, const x_va& v9, const x_va& v10)
-	{
-		ASSERT(formatString);
-		x_va_list args(v1,v2,v3,v4,v5,v6,v7,v8,v9,v10);
-		mLength = x_vcprintf(formatString, args);
-		mString = (char*)sStringTempAllocator->allocate(mLength + 2, X_ALIGNMENT_DEFAULT);
-		x_vsprintf(mString, mLength, formatString, args);
-		mMaxLength = mLength;
-		terminateWithZero();
-	}
-
-	xstring_buffer_tmp::~xstring_buffer_tmp()
-	{
-		sStringTempAllocator->deallocate(mString);
-		mString = NULL;
-	}
-
-
-
 	//------------------------------------------------------------------------------
 	static inline char* xAllocString(s32 length, s32& outLength)
 	{

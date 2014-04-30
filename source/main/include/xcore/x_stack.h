@@ -42,6 +42,7 @@ namespace xcore
 	class xstack
 	{
 	public:
+							xstack();
 							xstack(P const& _policy);
 							~xstack();
 

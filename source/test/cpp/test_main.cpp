@@ -74,13 +74,14 @@ xcore::x_iallocator* gTestAllocator = NULL;
 
 bool gRunUnitTest(UnitTest::TestReporter& reporter)
 {
-	xcore::x_iallocator* systemAllocator = xcore::gCreateSystemAllocator();
-	xcore::UnitTestAllocator unittestAllocator( systemAllocator );
+	xbase::x_Init();
+
+	xcore::UnitTestAllocator unittestAllocator( xcore::x_iallocator::default() );
 	UnitTest::SetAllocator(&unittestAllocator);
 
 	xcore::xconsole::addDefault();
 
-	xcore::TestAllocator testAllocator(systemAllocator);
+	xcore::TestAllocator testAllocator(xcore::x_iallocator::default());
 	gTestAllocator = &testAllocator;
 
 	xcore::x_Init(gTestAllocator);
@@ -91,6 +92,7 @@ bool gRunUnitTest(UnitTest::TestReporter& reporter)
 
 	UnitTest::SetAllocator(NULL);
 
+	xbase::x_Exit();
 	return r==0;
 }
 

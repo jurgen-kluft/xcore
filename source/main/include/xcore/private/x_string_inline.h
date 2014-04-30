@@ -179,15 +179,6 @@ s32					xstring_const_base<T>::compare(const xstring& inRHS, s32 inCharNum) cons
 //------------------------------------------------------------------------------
 
 template<class T>
-s32					xstring_const_base<T>::compare(const xstring_tmp& inRHS, s32 inCharNum) const
-{
-	inCharNum = (inCharNum==-1) ? (inRHS.getLength()) : inCharNum;
-	return x_strCompare(c_str(), getLength(), inRHS.c_str(), inCharNum);
-}
-
-//------------------------------------------------------------------------------
-
-template<class T>
 s32					xstring_const_base<T>::compare(const xcstring& inRHS, s32 inCharNum) const
 {
 	inCharNum = (inCharNum==-1) ? (inRHS.getLength()) : inCharNum;
@@ -216,15 +207,6 @@ s32					xstring_const_base<T>::compareNoCase(const char* inRHS, s32 inCharNum) c
 
 template<class T>
 s32					xstring_const_base<T>::compareNoCase(const xstring& inRHS, s32 inCharNum) const
-{
-	inCharNum = (inCharNum==-1) ? (inRHS.getLength()) : inCharNum;
-	return x_strCompareNoCase(c_str(), getLength(), inRHS.c_str(), inCharNum);
-}
-
-//------------------------------------------------------------------------------
-
-template<class T>
-s32					xstring_const_base<T>::compareNoCase(const xstring_tmp& inRHS, s32 inCharNum) const
 {
 	inCharNum = (inCharNum==-1) ? (inRHS.getLength()) : inCharNum;
 	return x_strCompareNoCase(c_str(), getLength(), inRHS.c_str(), inCharNum);
@@ -269,15 +251,6 @@ bool				xstring_const_base<T>::isEqual(const xstring& inRHS, s32 inCharNum) cons
 //------------------------------------------------------------------------------
 
 template<class T>
-bool				xstring_const_base<T>::isEqual(const xstring_tmp& inRHS, s32 inCharNum) const
-{
-	inCharNum = (inCharNum==-1) ? (inRHS.getLength()) : inCharNum;
-	return x_strEqual(c_str(), getLength(), inRHS.c_str(), inCharNum);
-}
-
-//------------------------------------------------------------------------------
-
-template<class T>
 bool				xstring_const_base<T>::isEqual(const xcstring& inRHS, s32 inCharNum) const
 {
 	inCharNum = (inCharNum==-1) ? (inRHS.getLength()) : inCharNum;
@@ -306,15 +279,6 @@ bool				xstring_const_base<T>::isEqualNoCase(const char* inRHS, s32 inCharNum) c
 
 template<class T>
 bool				xstring_const_base<T>::isEqualNoCase(const xstring& inRHS, s32 inCharNum) const
-{
-	inCharNum = (inCharNum==-1) ? (inRHS.getLength()) : inCharNum;
-	return x_strEqualNoCase(c_str(), getLength(), inRHS.c_str(), inCharNum);
-}
-
-//------------------------------------------------------------------------------
-
-template<class T>
-bool				xstring_const_base<T>::isEqualNoCase(const xstring_tmp& inRHS, s32 inCharNum) const
 {
 	inCharNum = (inCharNum==-1) ? (inRHS.getLength()) : inCharNum;
 	return x_strEqualNoCase(c_str(), getLength(), inRHS.c_str(), inCharNum);
@@ -457,16 +421,6 @@ void				xstring_const_base<T>::left(s32 inNum, xstring& outLeft) const
 //------------------------------------------------------------------------------
 
 template<class T>
-void				xstring_const_base<T>::left(s32 inNum, xstring_tmp& outLeft) const
-{
-	XBOUNDS(inNum, 0, getLength());
-	const char* buffer = c_str();
-	outLeft.copy(buffer, x_intu::min(inNum, getLength()));
-}
-
-//------------------------------------------------------------------------------
-
-template<class T>
 void				xstring_const_base<T>::left(s32 inNum, xcstring& outLeft) const
 {
 	XBOUNDS(inNum, 0, getLength());
@@ -478,18 +432,6 @@ void				xstring_const_base<T>::left(s32 inNum, xcstring& outLeft) const
 
 template<class T>
 void				xstring_const_base<T>::right(s32 inNum, xstring& outRight) const
-{
-	const s32 l = getLength();
-	XBOUNDS(inNum, 0, l);
-	const char* buffer = c_str();
-	inNum = x_intu::min(inNum, l);
-	outRight.copy(buffer + l - inNum, inNum);
-}
-
-//------------------------------------------------------------------------------
-
-template<class T>
-void				xstring_const_base<T>::right(s32 inNum, xstring_tmp& outRight) const
 {
 	const s32 l = getLength();
 	XBOUNDS(inNum, 0, l);
@@ -540,21 +482,6 @@ xstring				xstring_const_base<T>::mid(s32 inPosition, s32 inNum) const
 	const char* buffer = c_str();
 	outMid.copy(buffer+inPosition, inNum);
 	return outMid;
-}
-
-//------------------------------------------------------------------------------
-
-template<class T>
-void				xstring_const_base<T>::mid(s32 inPosition, xstring_tmp& outMid, s32 inNum) const
-{
-	const s32 l = getLength();
-	XBOUNDS(inPosition, 0, l);												// Must start to grab within string
-	ASSERT((inNum==-1) || (inPosition+inNum<=l));			// Can't grab beyond end of string
-
-	inPosition = x_intu::min(inPosition, l);
-	inNum = (inNum==-1) ? (l-inPosition) : (x_intu::min(inNum, l-inPosition));
-	const char* buffer = c_str();
-	outMid.copy(buffer+inPosition, inNum);
 }
 
 //------------------------------------------------------------------------------
@@ -629,65 +556,6 @@ bool				xstring_const_base<T>::rsplitOn(const char inChar, xstring& outLeft, xst
 
 template<class T>
 void				xstring_const_base<T>::split(s32 inPosition, bool inRemove, xstring& outLeft, xstring& outRight) const
-{
-	XBOUNDS(inPosition, 0, getLength());
-	XBOUNDS(inPosition + ((int)inRemove), 0, getLength());
-
-	left(inPosition, outLeft);
-	mid(inPosition + ((int)inRemove), outRight);
-}
-
-// xstring_tmp version
-
-template<class T>
-void				xstring_const_base<T>::substring(s32 inPosition, xstring_tmp& outSubstring, s32 inNum) const
-{
-	mid(inPosition, outSubstring, inNum);
-}
-
-//------------------------------------------------------------------------------
-
-template<class T>
-void				xstring_const_base<T>::substring(s32 inPosition, xstring_tmp& outSubstring) const
-{
-	mid(inPosition, outSubstring, getLength()-inPosition);
-}
-
-
-//------------------------------------------------------------------------------
-
-template<class T>
-bool				xstring_const_base<T>::splitOn(const char inChar, xstring_tmp& outLeft, xstring_tmp& outRight) const
-{
-	// Find the split character
-	s32 split_pos = find(inChar);
-	if (split_pos == -1) 
-		return xFALSE;
-
-	// Split string
-	split(split_pos, true, outLeft, outRight);
-	return xTRUE;
-}
-
-//------------------------------------------------------------------------------
-
-template<class T>
-bool				xstring_const_base<T>::rsplitOn(const char inChar, xstring_tmp& outLeft, xstring_tmp& outRight) const
-{
-	// Find the split character
-	int split_pos = rfind(inChar);
-	if (split_pos == -1) 
-		return xFALSE;
-
-	// Split string
-	split(split_pos, xTRUE, outLeft, outRight);
-	return xTRUE;
-}
-
-//------------------------------------------------------------------------------
-
-template<class T>
-void				xstring_const_base<T>::split(s32 inPosition, bool inRemove, xstring_tmp& outLeft, xstring_tmp& outRight) const
 {
 	XBOUNDS(inPosition, 0, getLength());
 	XBOUNDS(inPosition + ((int)inRemove), 0, getLength());
@@ -869,12 +737,6 @@ void			xstring_mutable_base<T>::repeat	(const xcstring& inString, s32 inTimes)
 
 template<class T>
 void			xstring_mutable_base<T>::repeat	(const xccstring& inString, s32 inTimes)
-{
-	repeat(inString.c_str(), inTimes, inString.getLength());
-}
-
-template<class T>
-void			xstring_mutable_base<T>::repeat	(const xstring_tmp& inString, s32 inTimes)
 {
 	repeat(inString.c_str(), inTimes, inString.getLength());
 }
@@ -1110,12 +972,6 @@ void			xstring_mutable_base<T>::insert	(const xccstring& inString)
 }
 
 template<class T>
-void			xstring_mutable_base<T>::insert	(const xstring_tmp& inString)
-{
-	insert(0, inString.c_str(), inString.getLength());
-}
-
-template<class T>
 void			xstring_mutable_base<T>::insert	(s32 inPosition, char inChar)
 {
 	insert(inPosition, &inChar, 1);
@@ -1196,12 +1052,6 @@ void			xstring_mutable_base<T>::insert	(s32 inPosition, const xcstring& inString
 
 template<class T>
 void			xstring_mutable_base<T>::insert	(s32 inPosition, const xccstring& inString)
-{
-	insert(inPosition, inString.c_str(), inString.getLength());
-}
-
-template<class T>
-void			xstring_mutable_base<T>::insert	(s32 inPosition, const xstring_tmp& inString)
 {
 	insert(inPosition, inString.c_str(), inString.getLength());
 }
@@ -1608,12 +1458,6 @@ void            xstring_mutable_base<T>::copy(const xstring& str)
 }
 
 template<class T>
-void            xstring_mutable_base<T>::copy(const xstring_tmp& str)
-{
-	copy(str.c_str(), str.getLength());
-}
-
-template<class T>
 void            xstring_mutable_base<T>::copy(const xcstring& str)
 {
 	copy(str.c_str(), str.getLength());
@@ -1728,13 +1572,6 @@ inline xcstring::xcstring(void* buffer, s32 bufferSize, const xstring& other)
 }
 
 //------------------------------------------------------------------------------
-inline xcstring::xcstring(void* buffer, s32 bufferSize, const xstring_tmp& other)
-{
-	mBuffer = (xstring_buffer_char(buffer, bufferSize));
-	mBuffer.copyFrom(other.c_str(), other.getLength());
-}
-
-//------------------------------------------------------------------------------
 inline xcstring::xcstring(void* buffer, s32 bufferSize, const xcstring& other)
 {
 	mBuffer = (xstring_buffer_char(buffer, bufferSize));
@@ -1770,15 +1607,6 @@ inline char&				xcstring::operator[]	(s32 inIndex)
 //------------------------------------------------------------------------------
 
 inline xcstring&		xcstring::operator=(const xstring& inRHS)
-{
-	mBuffer.setLength(0);
-	*this += inRHS;
-	return *this;
-}
-
-//------------------------------------------------------------------------------
-
-inline xcstring&		xcstring::operator=(const xstring_tmp& inRHS)
 {
 	mBuffer.setLength(0);
 	*this += inRHS;
@@ -1846,14 +1674,6 @@ inline xcstring&		xcstring::operator+=(const xstring& inRHS)
 
 //------------------------------------------------------------------------------
 
-inline xcstring&		xcstring::operator+=(const xstring_tmp& inRHS)
-{
-	concat(inRHS.c_str(), inRHS.getLength());
-	return *this;
-}
-
-//------------------------------------------------------------------------------
-
 inline xcstring&		xcstring::operator+=(const xcstring& inRHS)
 {
 	concat(inRHS.c_str(), inRHS.getLength());
@@ -1893,33 +1713,23 @@ inline xccstring& xccstring::operator = (const char* str)
  * operator +
  */
 
-inline xstring_tmp		operator+ (const xstring&		inLHS, char					inRHS)	{ return xstring_tmp(inLHS.c_str(), inLHS.getLength(), &inRHS, 1); }
-inline xstring_tmp		operator+ (const xstring&		inLHS, const char*			inRHS)	{ return xstring_tmp(inLHS.c_str(), inLHS.getLength(), inRHS, x_strlen(inRHS)); }
-inline xstring_tmp		operator+ (const xstring&		inLHS, const xstring&		inRHS)	{ return xstring_tmp(inLHS.c_str(), inLHS.getLength(), inRHS.c_str(), inRHS.getLength()); }
-inline xstring_tmp		operator+ (const xstring&		inLHS, const xstring_tmp&	inRHS)	{ return xstring_tmp(inLHS.c_str(), inLHS.getLength(), inRHS.c_str(), inRHS.getLength()); }
-inline xstring_tmp		operator+ (const xstring&		inLHS, const xcstring&		inRHS)	{ return xstring_tmp(inLHS.c_str(), inLHS.getLength(), inRHS.c_str(), inRHS.getLength()); }
-inline xstring_tmp		operator+ (const xstring&		inLHS, const xccstring&		inRHS)	{ return xstring_tmp(inLHS.c_str(), inLHS.getLength(), inRHS.c_str(), inRHS.getLength()); }
+inline xstring		operator+ (const xstring&		inLHS, char					inRHS)	{ return xstring(inLHS.c_str(), inLHS.getLength(), &inRHS, 1); }
+inline xstring		operator+ (const xstring&		inLHS, const char*			inRHS)	{ return xstring(inLHS.c_str(), inLHS.getLength(), inRHS, x_strlen(inRHS)); }
+inline xstring		operator+ (const xstring&		inLHS, const xstring&		inRHS)	{ return xstring(inLHS.c_str(), inLHS.getLength(), inRHS.c_str(), inRHS.getLength()); }
+inline xstring		operator+ (const xstring&		inLHS, const xcstring&		inRHS)	{ return xstring(inLHS.c_str(), inLHS.getLength(), inRHS.c_str(), inRHS.getLength()); }
+inline xstring		operator+ (const xstring&		inLHS, const xccstring&		inRHS)	{ return xstring(inLHS.c_str(), inLHS.getLength(), inRHS.c_str(), inRHS.getLength()); }
 
-inline xstring_tmp		operator+ (const xstring_tmp&	inLHS, char					inRHS)	{ return xstring_tmp(inLHS.c_str(), inLHS.getLength(), &inRHS, 1); }
-inline xstring_tmp		operator+ (const xstring_tmp&	inLHS, const char*			inRHS)	{ return xstring_tmp(inLHS.c_str(), inLHS.getLength(), inRHS, x_strlen(inRHS)); }
-inline xstring_tmp		operator+ (const xstring_tmp&	inLHS, const xstring&		inRHS)	{ return xstring_tmp(inLHS.c_str(), inLHS.getLength(), inRHS.c_str(), inRHS.getLength()); }
-inline xstring_tmp		operator+ (const xstring_tmp&	inLHS, const xstring_tmp&	inRHS)	{ return xstring_tmp(inLHS.c_str(), inLHS.getLength(), inRHS.c_str(), inRHS.getLength()); }
-inline xstring_tmp		operator+ (const xstring_tmp&	inLHS, const xcstring&		inRHS)	{ return xstring_tmp(inLHS.c_str(), inLHS.getLength(), inRHS.c_str(), inRHS.getLength()); }
-inline xstring_tmp		operator+ (const xstring_tmp&	inLHS, const xccstring&		inRHS)	{ return xstring_tmp(inLHS.c_str(), inLHS.getLength(), inRHS.c_str(), inRHS.getLength()); }
+inline xstring		operator+ (const xcstring&		inLHS, char					inRHS)	{ return xstring(inLHS.c_str(), inLHS.getLength(), &inRHS, 1); }
+inline xstring		operator+ (const xcstring&		inLHS, const char*			inRHS)	{ return xstring(inLHS.c_str(), inLHS.getLength(), inRHS, x_strlen(inRHS)); }
+inline xstring		operator+ (const xcstring&		inLHS, const xstring&		inRHS)	{ return xstring(inLHS.c_str(), inLHS.getLength(), inRHS.c_str(), inRHS.getLength()); }
+inline xstring		operator+ (const xcstring&		inLHS, const xcstring&		inRHS)	{ return xstring(inLHS.c_str(), inLHS.getLength(), inRHS.c_str(), inRHS.getLength()); }
+inline xstring		operator+ (const xcstring&		inLHS, const xccstring&		inRHS)	{ return xstring(inLHS.c_str(), inLHS.getLength(), inRHS.c_str(), inRHS.getLength()); }
 
-inline xstring_tmp		operator+ (const xcstring&		inLHS, char					inRHS)	{ return xstring_tmp(inLHS.c_str(), inLHS.getLength(), &inRHS, 1); }
-inline xstring_tmp		operator+ (const xcstring&		inLHS, const char*			inRHS)	{ return xstring_tmp(inLHS.c_str(), inLHS.getLength(), inRHS, x_strlen(inRHS)); }
-inline xstring_tmp		operator+ (const xcstring&		inLHS, const xstring&		inRHS)	{ return xstring_tmp(inLHS.c_str(), inLHS.getLength(), inRHS.c_str(), inRHS.getLength()); }
-inline xstring_tmp		operator+ (const xcstring&		inLHS, const xstring_tmp&	inRHS)	{ return xstring_tmp(inLHS.c_str(), inLHS.getLength(), inRHS.c_str(), inRHS.getLength()); }
-inline xstring_tmp		operator+ (const xcstring&		inLHS, const xcstring&		inRHS)	{ return xstring_tmp(inLHS.c_str(), inLHS.getLength(), inRHS.c_str(), inRHS.getLength()); }
-inline xstring_tmp		operator+ (const xcstring&		inLHS, const xccstring&		inRHS)	{ return xstring_tmp(inLHS.c_str(), inLHS.getLength(), inRHS.c_str(), inRHS.getLength()); }
-
-inline xstring_tmp		operator+ (const xccstring&		inLHS, char					inRHS)	{ return xstring_tmp(inLHS.c_str(), inLHS.getLength(), &inRHS, 1); }
-inline xstring_tmp		operator+ (const xccstring&		inLHS, const char*			inRHS)	{ return xstring_tmp(inLHS.c_str(), inLHS.getLength(), inRHS, x_strlen(inRHS)); }
-inline xstring_tmp		operator+ (const xccstring&		inLHS, const xstring&		inRHS)	{ return xstring_tmp(inLHS.c_str(), inLHS.getLength(), inRHS.c_str(), inRHS.getLength()); }
-inline xstring_tmp		operator+ (const xccstring&		inLHS, const xstring_tmp&	inRHS)	{ return xstring_tmp(inLHS.c_str(), inLHS.getLength(), inRHS.c_str(), inRHS.getLength()); }
-inline xstring_tmp		operator+ (const xccstring&		inLHS, const xcstring&		inRHS)	{ return xstring_tmp(inLHS.c_str(), inLHS.getLength(), inRHS.c_str(), inRHS.getLength()); }
-inline xstring_tmp		operator+ (const xccstring&		inLHS, const xccstring&		inRHS)	{ return xstring_tmp(inLHS.c_str(), inLHS.getLength(), inRHS.c_str(), inRHS.getLength()); }
+inline xstring		operator+ (const xccstring&		inLHS, char					inRHS)	{ return xstring(inLHS.c_str(), inLHS.getLength(), &inRHS, 1); }
+inline xstring		operator+ (const xccstring&		inLHS, const char*			inRHS)	{ return xstring(inLHS.c_str(), inLHS.getLength(), inRHS, x_strlen(inRHS)); }
+inline xstring		operator+ (const xccstring&		inLHS, const xstring&		inRHS)	{ return xstring(inLHS.c_str(), inLHS.getLength(), inRHS.c_str(), inRHS.getLength()); }
+inline xstring		operator+ (const xccstring&		inLHS, const xcstring&		inRHS)	{ return xstring(inLHS.c_str(), inLHS.getLength(), inRHS.c_str(), inRHS.getLength()); }
+inline xstring		operator+ (const xccstring&		inLHS, const xccstring&		inRHS)	{ return xstring(inLHS.c_str(), inLHS.getLength(), inRHS.c_str(), inRHS.getLength()); }
 
 /**
  * Global xstring operators
@@ -1931,19 +1741,12 @@ inline bool				operator< (const xstring&		inLHS, const char*			inRHS)	{ return i
 inline bool				operator< (const xstring&		inLHS, const xstring&		inRHS)	{ return inLHS.compare(inRHS) == -1; }
 inline bool				operator< (const xstring&		inLHS, const xcstring&		inRHS)	{ return inLHS.compare(inRHS) == -1; }
 inline bool				operator< (const xstring&		inLHS, const xccstring&		inRHS)	{ return inLHS.compare(inRHS) == -1; }
-inline bool				operator< (const xstring_tmp&	inLHS, const char*			inRHS)	{ return inLHS.compare(inRHS) == -1; }
-inline bool				operator< (const xstring_tmp&	inLHS, const xstring&		inRHS)	{ return inLHS.compare(inRHS) == -1; }
-inline bool				operator< (const xstring_tmp&	inLHS, const xstring_tmp&	inRHS)	{ return inLHS.compare(inRHS) == -1; }
-inline bool				operator< (const xstring_tmp&	inLHS, const xcstring&		inRHS)	{ return inLHS.compare(inRHS) == -1; }
-inline bool				operator< (const xstring_tmp&	inLHS, const xccstring&		inRHS)	{ return inLHS.compare(inRHS) == -1; }
 inline bool				operator< (const xcstring&		inLHS, const char*			inRHS)	{ return inLHS.compare(inRHS) == -1; }
 inline bool				operator< (const xcstring&		inLHS, const xstring&		inRHS)	{ return inLHS.compare(inRHS) == -1; }
-inline bool				operator< (const xcstring&		inLHS, const xstring_tmp&	inRHS)	{ return inLHS.compare(inRHS) == -1; }
 inline bool				operator< (const xcstring&		inLHS, const xcstring&		inRHS)	{ return inLHS.compare(inRHS) == -1; }
 inline bool				operator< (const xcstring&		inLHS, const xccstring&		inRHS)	{ return inLHS.compare(inRHS) == -1; }
 inline bool				operator< (const xccstring&		inLHS, const char*			inRHS)	{ return inLHS.compare(inRHS) == -1; }
 inline bool				operator< (const xccstring&		inLHS, const xstring&		inRHS)	{ return inLHS.compare(inRHS) == -1; }
-inline bool				operator< (const xccstring&		inLHS, const xstring_tmp&	inRHS)	{ return inLHS.compare(inRHS) == -1; }
 inline bool				operator< (const xccstring&		inLHS, const xcstring&		inRHS)	{ return inLHS.compare(inRHS) == -1; }
 inline bool				operator< (const xccstring&		inLHS, const xccstring&		inRHS)	{ return inLHS.compare(inRHS) == -1; }
 
@@ -1957,19 +1760,12 @@ inline bool				operator> (const xstring&		inLHS, const char*			inRHS)	{ return i
 inline bool				operator> (const xstring&		inLHS, const xstring&		inRHS)	{ return inLHS.compare(inRHS) == 1; }
 inline bool				operator> (const xstring&		inLHS, const xcstring&		inRHS)	{ return inLHS.compare(inRHS) == 1; }
 inline bool				operator> (const xstring&		inLHS, const xccstring&		inRHS)	{ return inLHS.compare(inRHS) == 1; }
-inline bool				operator> (const xstring_tmp&	inLHS, const char*			inRHS)	{ return inLHS.compare(inRHS) == 1; }
-inline bool				operator> (const xstring_tmp&	inLHS, const xstring&		inRHS)	{ return inLHS.compare(inRHS) == 1; }
-inline bool				operator> (const xstring_tmp&	inLHS, const xstring_tmp&	inRHS)	{ return inLHS.compare(inRHS) == 1; }
-inline bool				operator> (const xstring_tmp&	inLHS, const xcstring&		inRHS)	{ return inLHS.compare(inRHS) == 1; }
-inline bool				operator> (const xstring_tmp&	inLHS, const xccstring&		inRHS)	{ return inLHS.compare(inRHS) == 1; }
 inline bool				operator> (const xcstring&		inLHS, const char*			inRHS)	{ return inLHS.compare(inRHS) == 1; }
 inline bool				operator> (const xcstring&		inLHS, const xstring&		inRHS)	{ return inLHS.compare(inRHS) == 1; }
-inline bool				operator> (const xcstring&		inLHS, const xstring_tmp&	inRHS)	{ return inLHS.compare(inRHS) == 1; }
 inline bool				operator> (const xcstring&		inLHS, const xcstring&		inRHS)	{ return inLHS.compare(inRHS) == 1; }
 inline bool				operator> (const xcstring&		inLHS, const xccstring&		inRHS)	{ return inLHS.compare(inRHS) == 1; }
 inline bool				operator> (const xccstring&		inLHS, const char*			inRHS)	{ return inLHS.compare(inRHS) == 1; }
 inline bool				operator> (const xccstring&		inLHS, const xstring&		inRHS)	{ return inLHS.compare(inRHS) == 1; }
-inline bool				operator> (const xccstring&		inLHS, const xstring_tmp&	inRHS)	{ return inLHS.compare(inRHS) == 1; }
 inline bool				operator> (const xccstring&		inLHS, const xcstring&		inRHS)	{ return inLHS.compare(inRHS) == 1; }
 inline bool				operator> (const xccstring&		inLHS, const xccstring&		inRHS)	{ return inLHS.compare(inRHS) == 1; }
 
@@ -1983,19 +1779,12 @@ inline bool				operator<=(const xstring&		inLHS, const char*			inRHS)	{ return i
 inline bool				operator<=(const xstring&		inLHS, const xstring&		inRHS)	{ return inLHS.compare(inRHS) <= 0; }
 inline bool				operator<=(const xstring&		inLHS, const xcstring&		inRHS)	{ return inLHS.compare(inRHS) <= 0; }
 inline bool				operator<=(const xstring&		inLHS, const xccstring&		inRHS)	{ return inLHS.compare(inRHS) <= 0; }
-inline bool				operator<=(const xstring_tmp&	inLHS, const char*			inRHS)	{ return inLHS.compare(inRHS) <= 0; }
-inline bool				operator<=(const xstring_tmp&	inLHS, const xstring&		inRHS)	{ return inLHS.compare(inRHS) <= 0; }
-inline bool				operator<=(const xstring_tmp&	inLHS, const xstring_tmp&	inRHS)	{ return inLHS.compare(inRHS) <= 0; }
-inline bool				operator<=(const xstring_tmp&	inLHS, const xcstring&		inRHS)	{ return inLHS.compare(inRHS) <= 0; }
-inline bool				operator<=(const xstring_tmp&	inLHS, const xccstring&		inRHS)	{ return inLHS.compare(inRHS) <= 0; }
 inline bool				operator<=(const xcstring&		inLHS, const char*			inRHS)	{ return inLHS.compare(inRHS) <= 0; }
 inline bool				operator<=(const xcstring&		inLHS, const xstring&		inRHS)	{ return inLHS.compare(inRHS) <= 0; }
-inline bool				operator<=(const xcstring&		inLHS, const xstring_tmp&	inRHS)	{ return inLHS.compare(inRHS) <= 0; }
 inline bool				operator<=(const xcstring&		inLHS, const xcstring&		inRHS)	{ return inLHS.compare(inRHS) <= 0; }
 inline bool				operator<=(const xcstring&		inLHS, const xccstring&		inRHS)	{ return inLHS.compare(inRHS) <= 0; }
 inline bool				operator<=(const xccstring&		inLHS, const char*			inRHS)	{ return inLHS.compare(inRHS) <= 0; }
 inline bool				operator<=(const xccstring&		inLHS, const xstring&		inRHS)	{ return inLHS.compare(inRHS) <= 0; }
-inline bool				operator<=(const xccstring&		inLHS, const xstring_tmp&	inRHS)	{ return inLHS.compare(inRHS) <= 0; }
 inline bool				operator<=(const xccstring&		inLHS, const xcstring&		inRHS)	{ return inLHS.compare(inRHS) <= 0; }
 inline bool				operator<=(const xccstring&		inLHS, const xccstring&		inRHS)	{ return inLHS.compare(inRHS) <= 0; }
 
@@ -2009,19 +1798,12 @@ inline bool				operator>=(const xstring&		inLHS, const char*			inRHS)	{ return i
 inline bool				operator>=(const xstring&		inLHS, const xstring&		inRHS)	{ return inLHS.compare(inRHS) >= 0; }
 inline bool				operator>=(const xstring&		inLHS, const xcstring&		inRHS)	{ return inLHS.compare(inRHS) >= 0; }
 inline bool				operator>=(const xstring&		inLHS, const xccstring&		inRHS)	{ return inLHS.compare(inRHS) >= 0; }
-inline bool				operator>=(const xstring_tmp&	inLHS, const char*			inRHS)	{ return inLHS.compare(inRHS) >= 0; }
-inline bool				operator>=(const xstring_tmp&	inLHS, const xstring&		inRHS)	{ return inLHS.compare(inRHS) >= 0; }
-inline bool				operator>=(const xstring_tmp&	inLHS, const xstring_tmp&	inRHS)	{ return inLHS.compare(inRHS) >= 0; }
-inline bool				operator>=(const xstring_tmp&	inLHS, const xcstring&		inRHS)	{ return inLHS.compare(inRHS) >= 0; }
-inline bool				operator>=(const xstring_tmp&	inLHS, const xccstring&		inRHS)	{ return inLHS.compare(inRHS) >= 0; }
 inline bool				operator>=(const xcstring&		inLHS, const char*			inRHS)	{ return inLHS.compare(inRHS) >= 0; }
 inline bool				operator>=(const xcstring&		inLHS, const xstring&		inRHS)	{ return inLHS.compare(inRHS) >= 0; }
-inline bool				operator>=(const xcstring&		inLHS, const xstring_tmp&	inRHS)	{ return inLHS.compare(inRHS) >= 0; }
 inline bool				operator>=(const xcstring&		inLHS, const xcstring&		inRHS)	{ return inLHS.compare(inRHS) >= 0; }
 inline bool				operator>=(const xcstring&		inLHS, const xccstring&		inRHS)	{ return inLHS.compare(inRHS) >= 0; }
 inline bool				operator>=(const xccstring&		inLHS, const char*			inRHS)	{ return inLHS.compare(inRHS) >= 0; }
 inline bool				operator>=(const xccstring&		inLHS, const xstring&		inRHS)	{ return inLHS.compare(inRHS) >= 0; }
-inline bool				operator>=(const xccstring&		inLHS, const xstring_tmp&	inRHS)	{ return inLHS.compare(inRHS) >= 0; }
 inline bool				operator>=(const xccstring&		inLHS, const xcstring&		inRHS)	{ return inLHS.compare(inRHS) >= 0; }
 inline bool				operator>=(const xccstring&		inLHS, const xccstring&		inRHS)	{ return inLHS.compare(inRHS) >= 0; }
 
@@ -2035,19 +1817,12 @@ inline bool				operator==(const xstring&		inLHS, const char*			inRHS)	{ return i
 inline bool				operator==(const xstring&		inLHS, const xstring&		inRHS)	{ return inLHS.compare(inRHS) == 0; }
 inline bool				operator==(const xstring&		inLHS, const xcstring&		inRHS)	{ return inLHS.compare(inRHS) == 0; }
 inline bool				operator==(const xstring&		inLHS, const xccstring&		inRHS)	{ return inLHS.compare(inRHS) == 0; }
-inline bool				operator==(const xstring_tmp&	inLHS, const char*			inRHS)	{ return inLHS.compare(inRHS) == 0; }
-inline bool				operator==(const xstring_tmp&	inLHS, const xstring&		inRHS)	{ return inLHS.compare(inRHS) == 0; }
-inline bool				operator==(const xstring_tmp&	inLHS, const xstring_tmp&	inRHS)	{ return inLHS.compare(inRHS) == 0; }
-inline bool				operator==(const xstring_tmp&	inLHS, const xcstring&		inRHS)	{ return inLHS.compare(inRHS) == 0; }
-inline bool				operator==(const xstring_tmp&	inLHS, const xccstring&		inRHS)	{ return inLHS.compare(inRHS) == 0; }
 inline bool				operator==(const xcstring&		inLHS, const char*			inRHS)	{ return inLHS.compare(inRHS) == 0; }
 inline bool				operator==(const xcstring&		inLHS, const xstring&		inRHS)	{ return inLHS.compare(inRHS) == 0; }
-inline bool				operator==(const xcstring&		inLHS, const xstring_tmp&	inRHS)	{ return inLHS.compare(inRHS) == 0; }
 inline bool				operator==(const xcstring&		inLHS, const xcstring&		inRHS)	{ return inLHS.compare(inRHS) == 0; }
 inline bool				operator==(const xcstring&		inLHS, const xccstring&		inRHS)	{ return inLHS.compare(inRHS) == 0; }
 inline bool				operator==(const xccstring&		inLHS, const char*			inRHS)	{ return inLHS.compare(inRHS) == 0; }
 inline bool				operator==(const xccstring&		inLHS, const xstring&		inRHS)	{ return inLHS.compare(inRHS) == 0; }
-inline bool				operator==(const xccstring&		inLHS, const xstring_tmp&	inRHS)	{ return inLHS.compare(inRHS) == 0; }
 inline bool				operator==(const xccstring&		inLHS, const xcstring&		inRHS)	{ return inLHS.compare(inRHS) == 0; }
 inline bool				operator==(const xccstring&		inLHS, const xccstring&		inRHS)	{ return inLHS.compare(inRHS) == 0; }
 
@@ -2061,19 +1836,12 @@ inline bool				operator!=(const xstring&		inLHS, const char*			inRHS)	{ return i
 inline bool				operator!=(const xstring&		inLHS, const xstring&		inRHS)	{ return inLHS.compare(inRHS) != 0; }
 inline bool				operator!=(const xstring&		inLHS, const xcstring&		inRHS)	{ return inLHS.compare(inRHS) != 0; }
 inline bool				operator!=(const xstring&		inLHS, const xccstring&		inRHS)	{ return inLHS.compare(inRHS) != 0; }
-inline bool				operator!=(const xstring_tmp&	inLHS, const char*			inRHS)	{ return inLHS.compare(inRHS) != 0; }
-inline bool				operator!=(const xstring_tmp&	inLHS, const xstring&		inRHS)	{ return inLHS.compare(inRHS) != 0; }
-inline bool				operator!=(const xstring_tmp&	inLHS, const xstring_tmp&	inRHS)	{ return inLHS.compare(inRHS) != 0; }
-inline bool				operator!=(const xstring_tmp&	inLHS, const xcstring&		inRHS)	{ return inLHS.compare(inRHS) != 0; }
-inline bool				operator!=(const xstring_tmp&	inLHS, const xccstring&		inRHS)	{ return inLHS.compare(inRHS) != 0; }
 inline bool				operator!=(const xcstring&		inLHS, const char*			inRHS)	{ return inLHS.compare(inRHS) != 0; }
 inline bool				operator!=(const xcstring&		inLHS, const xstring&		inRHS)	{ return inLHS.compare(inRHS) != 0; }
-inline bool				operator!=(const xcstring&		inLHS, const xstring_tmp&	inRHS)	{ return inLHS.compare(inRHS) != 0; }
 inline bool				operator!=(const xcstring&		inLHS, const xcstring&		inRHS)	{ return inLHS.compare(inRHS) != 0; }
 inline bool				operator!=(const xcstring&		inLHS, const xccstring&		inRHS)	{ return inLHS.compare(inRHS) != 0; }
 inline bool				operator!=(const xccstring&		inLHS, const char*			inRHS)	{ return inLHS.compare(inRHS) != 0; }
 inline bool				operator!=(const xccstring&		inLHS, const xstring&		inRHS)	{ return inLHS.compare(inRHS) != 0; }
-inline bool				operator!=(const xccstring&		inLHS, const xstring_tmp&	inRHS)	{ return inLHS.compare(inRHS) != 0; }
 inline bool				operator!=(const xccstring&		inLHS, const xcstring&		inRHS)	{ return inLHS.compare(inRHS) != 0; }
 inline bool				operator!=(const xccstring&		inLHS, const xccstring&		inRHS)	{ return inLHS.compare(inRHS) != 0; }
 

@@ -186,6 +186,14 @@ namespace xcore
 	}
 
 	template <typename T, typename P>
+	inline				xstack<T,P>::xstack() 
+		: count(0)
+		, policy(P(x_iallocator::default()))
+	{
+		sentry.mNext = &sentry;
+	}
+
+	template <typename T, typename P>
 	inline				xstack<T,P>::xstack(P const& _policy) 
 		: count(0)
 		, policy(_policy)
