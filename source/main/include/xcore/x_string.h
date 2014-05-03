@@ -27,51 +27,52 @@ namespace xcore
 	class xcstring;			///< C style string (user supplied 'char*')
 	class xccstring;		///< C style const string (user supplied 'const char*')
 
-	class xstringdata
-	{
-	public:
-		virtual s32				getLength() const = 0;
-		virtual s32				getMaxLength() const = 0;
-
-		virtual bool			isEmpty() const = 0;
-
-		virtual ustr8*			getPointer() = 0;
-		virtual const ustr8*	getPointer() const = 0;
-
-		virtual bool			isReadonly() const = 0;
-		virtual bool			isGrowable() const = 0;
-
-		virtual void			terminateWithZero() = 0;
-
-		// Reference counting interface
-		virtual void			bind() = 0;
-		virtual void			unbind() = 0;
-
-		// Dynamic buffer interface
-		virtual void			setLength(u32) = 0;
-		virtual void			resize(u32) = 0;
-		virtual void			unique() = 0;
-		virtual void			setEmpty() = 0;
-	};
-
-	class xstring_const_base
+	class xstring_base
 	{
 	protected:
+		class idata
+		{
+		public:
+			virtual ulen8			getLength() const = 0;
+			virtual u32				getReserved() const = 0;
+			virtual void			setLength(ulen8) = 0;
+
+			virtual bool			isEmpty() const = 0;
+			virtual void			setEmpty() = 0;
+
+			virtual uptr8			getPtr() = 0;
+			virtual ucptr8			getCPtr() const = 0;
+
+			virtual bool			isReadonly() const = 0;
+			virtual bool			isGrowable() const = 0;
+
+			virtual void			copyFrom(char const* _str, u32 _len) = 0;
+			virtual void			copyFrom(ustr8 const* _str, ulen8 _len) = 0;
+
+			virtual void			terminateWithZero() = 0;
+
+			// Reference counting interface
+			virtual void			bind() = 0;
+			virtual void			unbind() = 0;
+
+			// Dynamic buffer interface
+			virtual void			resize(u32) = 0;
+			virtual void			unique() = 0;
+		};
+	};
+
+	class xstring_const_base : public xstring_base
+	{
+	protected:
+		idata*				mBuffer;
+
 							xstring_const_base		()															{ }
+							xstring_const_base		(idata* _data) : mBuffer(_data)								{ }
 							xstring_const_base		(const xstring_const_base& _i) : mBuffer(_i.mBuffer)		{ mBuffer->bind(); }
-							xstring_const_base		(xstringdata* _data) : mBuffer(_data)						{ }
-
-		explicit			xstring_const_base		(const xstring& str);
-		explicit			xstring_const_base		(const xcstring& str);
-		explicit			xstring_const_base		(const xccstring& str);
-
 							~xstring_const_base		()															{ mBuffer->unbind(); }
 
-		xstringdata*		mBuffer;
-
 	public:
-
-		u32					getLength				(void) const;
+		ulen8				len						(void) const;
 		u32					size					(void) const;
 		bool				isEmpty					(void) const;
 
@@ -84,7 +85,7 @@ namespace xcore
 		bool				isQuoted                (uchar8 inQuote) const;
 		bool				isDelimited             (uchar8 inLeft, uchar8 inRight) const;
 
-		uchar8				getAt					(u32 inPosition) const;
+		uchar8				getAt					(s32 inPosition) const;
 		uchar8				firstChar				(void) const;
 		uchar8				lastChar				(void) const;
 
@@ -123,32 +124,55 @@ namespace xcore
 		bool				isEqualNoCase			(const xccstring& inRHS, s32 inCharNum = -1) const;			///< Check if two strings are equal, not taking capitalization into account
 			
 		///@name Search/replace
-		s32					find					(char inChar, s32 inPos=0, s32 inLen=-1) const;				///< Return position of first occurrence of <inChar> after <inPosition> or -1 if not found
-		s32					find					(const char* inStr, s32 inPos=0, s32 inLen=-1) const;		///< Return position of first occurrence of <inStr> after <inPosition> or -1 if not found
-		s32					findNoCase				(char inChar, s32 inPos=0, s32 inLen=-1) const;				///< Return position of first occurrence of <inChar> after <inPosition> or -1 if not found
-		s32					findNoCase				(const char* inStr, s32 inPos=0, s32 inLen=-1) const;		///< Return position of first occurrence of <inStr> after <inPosition> or -1 if not found
-		s32					rfind					(char inChar, s32 inPos=-1, s32 inLen=-1) const;			///< Return position of last occurrence of <inChar> on or before <inPosition> or -1 if not found
-		s32					rfind					(const char* inStr, s32 inPos=-1, s32 inLen=-1) const;		///< Return position of last occurrence of <inChar> on or before <inPosition> or -1 if not found
-		s32					findOneOf				(const char* inCharSet, s32 inPos = 0) const;				///< Return position of first occurrence of a character in <inCharSet> after <inPosition> or -1 if not found
-		s32					rfindOneOf				(const char* inCharSet, s32 inPos = -1) const;				///< Return position of last occurrence of a character in <inCharSet> after <inPosition> or -1 if not found
+		upos8				find					(uchar8 inChar, s32 inPos=0, s32 inLen=-1) const;			///< Return position of first occurrence of <inChar> after <inPosition> or -1 if not found
+		upos8				find					(const ustr8* inStr, s32 inPos=0, s32 inLen=-1) const;		///< Return position of first occurrence of <inStr> after <inPosition> or -1 if not found
+		upos8				findNoCase				(uchar8 inChar, s32 inPos=0, s32 inLen=-1) const;			///< Return position of first occurrence of <inChar> after <inPosition> or -1 if not found
+		upos8				findNoCase				(const ustr8* inStr, s32 inPos=0, s32 inLen=-1) const;		///< Return position of first occurrence of <inStr> after <inPosition> or -1 if not found
 
-		s32					indexOf					(char inChar, s32 inPosition = 0) const						{ return find(inChar, inPosition); }
-		s32					indexOf					(const char* inStr, s32 inPosition = 0) const				{ return find(inStr, inPosition); }
-		s32					lastIndexOf				(char inChar, s32 inPosition = -1) const					{ return rfind(inChar, inPosition); }
-		s32					lastIndexOf				(const char* inStr, s32 inPosition = -1) const				{ return rfind(inStr, inPosition); }
+		upos8				find					(char inChar, s32 inPos=0, s32 inLen=-1) const				{ return find(uchar8(inChar), inPos, inLen); }
+		upos8				find					(const char* inStr, s32 inPos=0, s32 inLen=-1) const		{ return find((const ustr8*)inStr, inPos, inLen); }
+		upos8				findNoCase				(char inChar, s32 inPos=0, s32 inLen=-1) const				{ return findNoCase(uchar8(inChar), inPos, inLen); }
+		upos8				findNoCase				(const char* inStr, s32 inPos=0, s32 inLen=-1) const		{ return findNoCase((const ustr8*)inStr, inPos, inLen); }
 
-		bool				contains				(char inChar) const											{ return find(inChar) != -1; }				///< Check if this string contains character <inChar>
-		bool				contains				(char inChar, s32 inPos, s32 inLen=-1) const				{ return find(inChar, 0, inLen) != -1; }	///< Check if this string contains character <inChar>
-		bool				contains				(const char* inStr) const									{ return find(inStr) != -1; }				///< Check if this string contains string <inString>
-		bool				contains				(const char* inStr, s32 inPos, s32 inLen=-1) const			{ return find(inStr, 0, inLen) != -1; }		///< Check if this string contains string <inString>
-		bool				containsNoCase			(const char* inStr) const									{ return findNoCase(inStr) != -1; }			///< Check if this string contains <inString> without paying attention to case
-		bool				containsNoCase			(const char* inStr, s32 inPos, s32 inLen=-1) const			{ return findNoCase(inStr, inPos, inLen) != -1; } ///< Check if this string contains <inString> without paying attention to case
+		upos8				rfind					(uchar8 inChar, s32 inPos=-1, s32 inLen=-1) const;			///< Return position of last occurrence of <inChar> on or before <inPosition> or -1 if not found
+		upos8				rfind					(const ustr8* inStr, s32 inPos=-1, s32 inLen=-1) const;		///< Return position of last occurrence of <inChar> on or before <inPosition> or -1 if not found
+		upos8				findOneOf				(const ustr8* inCharSet, s32 inPos = 0) const;				///< Return position of first occurrence of a character in <inCharSet> after <inPosition> or -1 if not found
+		upos8				rfindOneOf				(const ustr8* inCharSet, s32 inPos = -1) const;				///< Return position of last occurrence of a character in <inCharSet> after <inPosition> or -1 if not found
+
+		upos8				rfind					(char inChar, s32 inPos=-1, s32 inLen=-1) const				{ return rfind(uchar8(inChar), inPos, inLen); }
+		upos8				rfind					(const char* inStr, s32 inPos=-1, s32 inLen=-1) const		{ return rfind((const ustr8*)inStr, inPos, inLen); }
+		upos8				findOneOf				(const char* inCharSet, s32 inPos = 0) const				{ return findOneOf((const ustr8*)inCharSet, inPos); }
+		upos8				rfindOneOf				(const char* inCharSet, s32 inPos = -1) const				{ return rfindOneOf((const ustr8*)inCharSet, inPos); }
+
+		upos8				indexOf					(char inChar, s32 inPosition = 0) const						{ return find(inChar, inPosition); }
+		upos8				indexOf					(const char* inStr, s32 inPosition = 0) const				{ return find(inStr, inPosition); }
+		upos8				lastIndexOf				(char inChar, s32 inPosition = -1) const					{ return rfind(inChar, inPosition); }
+		upos8				lastIndexOf				(const char* inStr, s32 inPosition = -1) const				{ return rfind(inStr, inPosition); }
+
+		upos8				indexOf					(uchar8 inChar, s32 inPosition = 0) const					{ return find(inChar, inPosition); }
+		upos8				indexOf					(const ustr8* inStr, s32 inPosition = 0) const				{ return find(inStr, inPosition); }
+		upos8				lastIndexOf				(uchar8 inChar, s32 inPosition = -1) const					{ return rfind(inChar, inPosition); }
+		upos8				lastIndexOf				(const ustr8* inStr, s32 inPosition = -1) const				{ return rfind(inStr, inPosition); }
+
+		bool				contains				(char inChar) const											{ return !find(inChar).is_empty(); }					///< Check if this string contains character <inChar>
+		bool				contains				(char inChar, s32 inPos, s32 inLen=-1) const				{ return !find(inChar, 0, inLen).is_empty(); }			///< Check if this string contains character <inChar>
+		bool				contains				(const char* inStr) const									{ return !find(inStr).is_empty(); }						///< Check if this string contains string <inString>
+		bool				contains				(const char* inStr, s32 inPos, s32 inLen=-1) const			{ return !find(inStr, 0, inLen).is_empty(); }			///< Check if this string contains string <inString>
+		bool				containsNoCase			(const char* inStr) const									{ return !findNoCase(inStr).is_empty(); }				///< Check if this string contains <inString> without paying attention to case
+		bool				containsNoCase			(const char* inStr, s32 inPos, s32 inLen=-1) const			{ return !findNoCase(inStr, inPos, inLen).is_empty(); } ///< Check if this string contains <inString> without paying attention to case
+
+		bool				contains				(uchar8 inChar) const										{ return find(inChar).is_empty(); }						///< Check if this string contains character <inChar>
+		bool				contains				(uchar8 inChar, s32 inPos, s32 inLen=-1) const				{ return find(inChar, 0, inLen).is_empty(); }			///< Check if this string contains character <inChar>
+		bool				contains				(const ustr8* inStr) const									{ return find(inStr).is_empty(); }						///< Check if this string contains string <inString>
+		bool				contains				(const ustr8* inStr, s32 inPos, s32 inLen=-1) const			{ return find(inStr, 0, inLen).is_empty(); }			///< Check if this string contains string <inString>
+		bool				containsNoCase			(const ustr8* inStr) const									{ return findNoCase(inStr).is_empty(); }				///< Check if this string contains <inString> without paying attention to case
+		bool				containsNoCase			(const ustr8* inStr, s32 inPos, s32 inLen=-1) const			{ return findNoCase(inStr, inPos, inLen).is_empty(); }	///< Check if this string contains <inString> without paying attention to case
 
 		/// xstring versions
-		void				left					(s32 inNum, xstring& outLeft) const;							///< Return the leftmost <inNum> characters of this string
-		void				right					(s32 inNum, xstring& outRight) const;							///< Return the rightmost <inNum> characters of this string
-		void				mid						(u32 inPosition, xstring& outMid, s32 inNum = -1) const;		///< Return a string containing <inNum> characters from this string, starting at <inPosition>
-		xstring				mid						(u32 inPosition, s32 inNum = -1) const;							///< Return a string containing <inNum> characters from this string, starting at <inPosition>
+		void				left					(s32 inNum, xstring& outLeft) const;						///< Return the leftmost <inNum> characters of this string
+		void				right					(s32 inNum, xstring& outRight) const;						///< Return the rightmost <inNum> characters of this string
+		void				mid						(u32 inPosition, xstring& outMid, s32 inNum = -1) const;	///< Return a string containing <inNum> characters from this string, starting at <inPosition>
+		xstring				mid						(u32 inPosition, s32 inNum = -1) const;						///< Return a string containing <inNum> characters from this string, starting at <inPosition>
 		void				substring				(u32 inPosition, xstring& outSubstring, s32 inNum) const;
 		void				substring				(u32 inPosition, xstring& outSubstring) const;
 		xstring				substr					(u32 inPosition=0, s32 inNum=-1) const;
@@ -158,17 +182,17 @@ namespace xcore
 		void				split					(u32 inPosition, bool inRemove, xstring& outLeft, xstring& outRight) const;	///< Split string at <inPosition>, return results in <outLeft> and <outRight>, if <inRemove> is true result doesn't include tchar at <inPosition>
 
 		/// xcstring versions
-		void				left					(s32 inNum, xcstring& outLeft) const;							///< Return the leftmost <inNum> characters of this string
-		void				right					(s32 inNum, xcstring& outRight) const;							///< Return the rightmost <inNum> characters of this string
-		void				mid						(u32 inPosition, xcstring& outMid, s32 inNum = -1) const;		///< Return a string containing <inNum> characters from this string, starting at <inPosition>
+		void				left					(s32 inNum, xcstring& outLeft) const;						///< Return the leftmost <inNum> characters of this string
+		void				right					(s32 inNum, xcstring& outRight) const;						///< Return the rightmost <inNum> characters of this string
+		void				mid						(u32 inPosition, xcstring& outMid, s32 inNum = -1) const;	///< Return a string containing <inNum> characters from this string, starting at <inPosition>
 		void				substring				(u32 inPosition, xcstring& outSubstring, s32 inNum) const;
 		void				substring				(u32 inPosition, xcstring& outSubstring) const;
 
-		bool				splitOn					(const char inChar, xcstring& outLeft, xcstring& outRight) const;	///< Split string on first of occurrence of <ch>, returns result in <outLeft> and <outRight>
-		bool				rsplitOn				(const char inChar, xcstring& outLeft, xcstring& outRight) const;	///< Split string on last of occurrence of <ch>, returns result in <outLeft> and <outRight>
+		bool				splitOn					(const char inChar, xcstring& outLeft, xcstring& outRight) const;		///< Split string on first of occurrence of <ch>, returns result in <outLeft> and <outRight>
+		bool				rsplitOn				(const char inChar, xcstring& outLeft, xcstring& outRight) const;		///< Split string on last of occurrence of <ch>, returns result in <outLeft> and <outRight>
 		void				split					(u32 inPosition, bool inRemove, xcstring& outLeft, xcstring& outRight) const;	///< Split string at <inPosition>, return results in <outLeft> and <outRight>, if <inRemove> is true result doesn't include tchar at <inPosition>
 
-		inline const ustr8*	c_str					(void) const 												{ return mBuffer->getPointer(); }
+		inline const ustr8*	c_str					(void) const 															{ return mBuffer->getPtr().str(); }
 	};
 
 	class xstring_mutable_base : public xstring_const_base
@@ -178,10 +202,11 @@ namespace xcore
 
 	protected:
 							xstring_mutable_base	(void);
-							xstring_mutable_base	(s32 len);
+							xstring_mutable_base	(idata* _data) : __const_base(_data)									{ }
+							xstring_mutable_base	(u32 len);
 							xstring_mutable_base	(const char* str);
-							xstring_mutable_base	(s32 len, const char* str);
-							xstring_mutable_base	(s32 lenA, const char* strA, s32 lenB, const char* strB);
+							xstring_mutable_base	(u32 len, const char* str);
+							xstring_mutable_base	(u32 lenA, const char* strA, u32 lenB, const char* strB);
 							xstring_mutable_base	(const char* formatString, const x_va_list& args);
 							xstring_mutable_base	(const char* formatString, const x_va& v1, const x_va& v2=x_va::sEmpty, const x_va& v3=x_va::sEmpty, const x_va& v4=x_va::sEmpty, const x_va& v5=x_va::sEmpty, const x_va& v6=x_va::sEmpty, const x_va& v7=x_va::sEmpty, const x_va& v8=x_va::sEmpty, const x_va& v9=x_va::sEmpty, const x_va& v10=x_va::sEmpty);
 
@@ -191,12 +216,14 @@ namespace xcore
 
 	public:
 
-		s32					getMaxLength			(void) const						{ return mBuffer->getMaxLength(); }
+		s32					max						(void) const															{ return mBuffer->getReserved(); }
 
 		void				clear					(void);
 
 		void				repeat					(const char* inString, s32 inTimes);
 		void				repeat					(const char* inString, s32 inTimes, s32 inStringLength);
+		void				repeat					(const ustr8* inString, s32 inTimes);
+		void				repeat					(const ustr8* inString, s32 inTimes, s32 inStringLength);
 		void				repeat					(const xstring& inString, s32 inTimes);
 		void				repeat					(const xcstring& inString, s32 inTimes);
 		void				repeat					(const xccstring& inString, s32 inTimes);
@@ -204,34 +231,39 @@ namespace xcore
 		s32					format					(const char* formatString, const x_va_list& args);
 		s32					formatAdd				(const char* formatString, const x_va_list& args);
 
-		void				setAt					(s32 inPosition, char inChar);											///< Set character <inChar> at <inPosition>
-		void				setAt					(s32 inPosition, const char* inString, s32 inNum);						///< Replace character at <inPosition> with <inString>
-		void				setAt					(s32 inPosition, s32 inLen, const char* inString, s32 inNum=-1);		///< Replace <inNum> characters at <inPosition> with <inString>
+		void				setAt					(u32 inPosition, char inChar);											///< Set character <inChar> at <inPosition>
+		void				setAt					(u32 inPosition, const char* inString, s32 inNum);						///< Replace character at <inPosition> with <inString>
+		void				setAt					(u32 inPosition, s32 inLen, const char* inString, s32 inNum=-1);		///< Replace <inNum> characters at <inPosition> with <inString>
 
-		void				replace					(s32 inPos, const char* inString, s32 inLen=-1);						///< Replace character at <inPosition> with <inString>
-		void				replace					(s32 inPos, s32 inLen, const char* inString, s32 inNum=-1);				///< Replace <inLength> characters at <inPosition> with inNumChars characters of <inString>
-		s32					replace					(const char* inFind, const char* inSubstitute, s32 inPos=0);			///< Replace all occurrences of string <inFind> after <inPosition> with string <inSubstitute>, returns amount of replacements made
-		s32					replace					(char inFind, const char* inSubstitute, s32 inPos=0);					///< Replace all occurrences of character <inFind> after <inPosition> with string <inSubstitute>, returns amount of replacements made
-		s32					replace					(const char* inFind, char inSubstitute, s32 inPos=0);					///< Replace all occurrences of string <inFind> after <inPosition> with char <inSubstitute>, returns amount of replacements made
-		s32					replace					(char inFind, char inSubstitute, s32 inPos=0);							///< Replace all occurrences of char <inFind> after <inPosition> with char <inSubstitute>, returns amount of replacements made
+		void				replace					(u32 inPos, const char* inString, s32 inLen=-1);						///< Replace character at <inPosition> with <inString>
+		void				replace					(u32 inPos, s32 inLen, const char* inString, s32 inNum=-1);				///< Replace <inLength> characters at <inPosition> with inNumChars characters of <inString>
+		s32					replace					(const char* inFind, const char* inSubstitute, u32 inPos=0);			///< Replace all occurrences of string <inFind> after <inPosition> with string <inSubstitute>, returns amount of replacements made
+		s32					replace					(char inFind, const char* inSubstitute, u32 inPos=0);					///< Replace all occurrences of character <inFind> after <inPosition> with string <inSubstitute>, returns amount of replacements made
+		s32					replace					(const char* inFind, char inSubstitute, u32 inPos=0);					///< Replace all occurrences of string <inFind> after <inPosition> with char <inSubstitute>, returns amount of replacements made
+		s32					replace					(char inFind, char inSubstitute, u32 inPos=0);							///< Replace all occurrences of char <inFind> after <inPosition> with char <inSubstitute>, returns amount of replacements made
 
-		s32					replaceAnyWith			(const char* inAny, char inWith, s32 inFrom=0, s32 inNum=-1);			///< Replace any character from <inAny> in the string with the <inWith> character
+		s32					replaceAnyWith			(const char* inAny, char inWith, u32 inFrom=0, s32 inNum=-1);			///< Replace any character from <inAny> in the string with the <inWith> character
 
 		void				insert					(char inChar);															///< Insert inChar at current position
+		void				insert					(uchar8 inChar);														///< Insert inChar at current position
 		void				insert					(const char* inString, s32 inNum=-1);									///< Insert inString starting at current position
+		void				insert					(const ustr8* inString, s32 inNum=-1);									///< Insert inString starting at current position
 		void				insert					(const xstring& inString);												///< Insert inString starting at current position
 		void				insert					(const xcstring& inString);												///< Insert inString starting at current position
 		void				insert					(const xccstring& inString);											///< Insert inString starting at current position
 
-		void				insert					(s32 inPos, char inChar);												///< Insert inChar at <inPosition>
-		void				insert					(s32 inPos, const char* inString, s32 inNum=-1);						///< Insert inString starting at <inPosition>
-		void				insert					(s32 inPos, const xstring& inString);									///< Insert inString starting at <inPosition>
-		void				insert					(s32 inPos, const xcstring& inString);									///< Insert inString starting at <inPosition>
-		void				insert					(s32 inPos, const xccstring& inString);									///< Insert inString starting at <inPosition>
+		void				insert					(u32 inPos, char inChar);												///< Insert inChar at <inPosition>
+		void				insert					(u32 inPos, uchar8 inChar);												///< Insert inChar at <inPosition>
+		void				insert					(u32 inPos, const char* inString, s32 inNum=-1);						///< Insert inString starting at <inPosition>
+		void				insert					(u32 inPos, const ustr8* inString, s32 inNum=-1);						///< Insert inString starting at <inPosition>
+		void				insert					(u32 inPos, const xstring& inString);									///< Insert inString starting at <inPosition>
+		void				insert					(u32 inPos, const xcstring& inString);									///< Insert inString starting at <inPosition>
+		void				insert					(u32 inPos, const xccstring& inString);									///< Insert inString starting at <inPosition>
 
-		void				remove					(s32 inStart, s32 inLength);											///< Remove <inLength> characters starting at <inStart>
-		void				erase					(s32 inStart= 0, s32 inLength = -1);									///< Erase <inLength> characters starting at <inStart>>
+		void				remove					(u32 inStart, u32 inLength);											///< Remove <inLength> characters starting at <inStart>
+		void				erase					(u32 inStart=0, s32 inLength = -1);										///< Erase <inLength> characters starting at <inStart>>
 		void				remove					(const char* inCharSet);												///< Remove characters in <inCharSet> from string
+		void				remove					(const ustr8* inCharSet);												///< Remove characters in <inCharSet> from string
 
 		void				upper					(void);																	///< Uppercase all chars in string (e.g. "myWord" -> "MYWORD")
 		void				lower					(void);																	///< Lowercase all chars in string (e.g. "myWord" -> "myword")
@@ -256,11 +288,13 @@ namespace xcore
 		bool				splitOn					(char inChar, xstring& outLeft, xstring& outRight) const;				///< Split string on first occurrence of <ch>, moves all text after <ch> into <outRight>
 		bool				rsplitOn				(char inChar, xstring& outRight);										///< Split string on last occurrence of <ch>, moves all text after <ch> into <outRight>
 		bool				rsplitOn				(char inChar, xstring& outLeft, xstring& outRight) const;				///< Split string on last occurrence of <ch>, moves all text after <ch> into <outRight>
-		void				split					(s32 inPosition, bool inRemove, xstring& outRight);						///< Split string at <inPosition>, move text at the right of inPosition into <outRight>
-		void				split					(s32 inPosition, bool inRemove, xstring& outLeft, xstring& outRight) const;	///< Split string at <inPosition>, move text at the right of inPosition into <outRight>
+		void				split					(u32 inPosition, bool inRemove, xstring& outRight);						///< Split string at <inPosition>, move text at the right of inPosition into <outRight>
+		void				split					(u32 inPosition, bool inRemove, xstring& outLeft, xstring& outRight) const;	///< Split string at <inPosition>, move text at the right of inPosition into <outRight>
 
 		void				copy					(const char* str);
 		void				copy					(const char* str, s32 length);
+		void				copy					(const ustr8* str);
+		void				copy					(const ustr8* str, s32 length);
 		void				copy					(const xstring& str);
 		void				copy					(const xcstring& str);
 		void				copy					(const xccstring& str);
@@ -269,7 +303,9 @@ namespace xcore
 
 	protected:
 		void				concat					(const char* inSource);													///< Concatenate <inSource> to this string
-		void				concat					(const char* inSource, s32 inLength);									///< Concatenate string with <inLength> characters from <inSource>
+		void				concat					(const char* inSource, u32 inLength);									///< Concatenate string with <inLength> characters from <inSource>
+		void				concat					(const ustr8* inSource);												///< Concatenate <inSource> to this string
+		void				concat					(const ustr8* inSource, ulen8 inLength);								///< Concatenate string with <inLength> characters from <inSource>
 	};
 
 	/// Mutable, Heap
@@ -278,7 +314,7 @@ namespace xcore
 	public:
 		typedef				xstring_mutable_base	__base;
 
-		class data : public xstringdata
+		class data : public idata
 		{
 			inline	void init() 
 			{
@@ -293,31 +329,31 @@ namespace xcore
 			}
 
 		public:
-			inline					data(x_iallocator* _alloc) : alloc_(_alloc), ref_(0), len_(0), max_(0) { init(); }
-			inline					data(x_iallocator* _alloc, s32 _ref, u32 _len, u32 _max) : alloc_(_alloc), ref_(_ref), len_(_len), max_(_max) { init(); }
+			inline					data(x_iallocator* _alloc) : alloc_(_alloc), ref_(0), len_(), max_(0) { init(); }
+			inline					data(x_iallocator* _alloc, s32 _ref, ulen8 _len, u32 _max) : alloc_(_alloc), ref_(_ref), len_(_len), max_(_max) { init(); }
 
-			virtual s32				getLength() const				{ return len_; }
-			virtual s32				getMaxLength() const			{ return max_; }
+			virtual ulen8			getLength() const				{ return len_; }
+			virtual u32				getReserved() const				{ return max_; }
+			virtual void			setLength(ulen8 _len);
 
-			virtual bool			isEmpty() const					{ return len_ == 0; }
+			virtual bool			isEmpty() const					{ return len_.clen() == 0; }
+			virtual void			setEmpty();
 
-			virtual ustr8*			getPointer()					{ return data_; }
-			virtual const ustr8*	getPointer() const				{ return data_; }
+			virtual uptr8			getPtr()						{ return uptr8(data_); }
+			virtual ucptr8			getCPtr() const					{ return ucptr8(data_); }
 
 			virtual bool			isReadonly() const				{ return false; }
 			virtual bool			isGrowable() const				{ return true; }
-
-			virtual void			terminateWithZero()				{ data_[len_].c='\0'; data_[len_+1].c='\0';}
+			
+			virtual void			terminateWithZero()				{ data_[len_.blen()].c='\0'; data_[(u32)len_.blen()+1].c='\0';}
 
 			// Reference counting interface
 			virtual void			bind()							{ ++ref_; }
 			virtual void			unbind()						{ if (--ref_ <= 0) alloc_->deallocate(this); }
 
 			// Dynamic buffer interface
-			virtual void			setLength(u32 _len);
 			virtual void			resize(u32);
 			virtual void			unique();
-			virtual void			setEmpty();
 
 			data*					clone();
 
@@ -338,7 +374,7 @@ namespace xcore
 		private:
 			x_iallocator*			alloc_;
 			s32						ref_;								///< Reference count
-			u32						len_;
+			ulen8					len_;
 			u32						max_;
 			ustr8					data_[8];							///< String data (allocated with sAlloc so that it is large enough to fit the string)
 		};
@@ -351,7 +387,7 @@ namespace xcore
 							xstring					(const ustr8* inStr);
 							xstring					(const ustr8* inStr, u32 length);
 							xstring					(const ustr8* inStrA, u32 inStrLengthA, const ustr8* inStrB, u32 inStrLengthB);
-				            xstring					(const xstring& inStr);
+							xstring					(const xstring& inStr);
 		explicit			xstring					(const xcstring& inStr);
 		explicit            xstring					(const xccstring& inStr);
 
@@ -416,44 +452,45 @@ namespace xcore
 	public:
 		typedef				xstring_mutable_base	__base;
 
-		class data : public xstringdata
+		class data : public idata
 		{
 		public:
-			inline					data() : data_(0), len_(0), max_(0)		{ }
-			inline					data(ustr8* _data, u32 _max, u32 _len) : data_(_data), max_(_max), len_(_len) { }
+			inline					data() : data_(0), max_(0), len_()		{ }
+			inline					data(ustr8* _data, u32 _max, ulen8 _len=ulen8()) : data_(_data), max_(_max), len_(_len) { }
 
-			virtual s32				getLength() const				{ return len_; }
-			virtual s32				getMaxLength() const			{ return max_; }
+			virtual ulen8			getLength() const				{ return len_; }
+			virtual u32				getReserved() const				{ return len_.blen(); }
+			virtual void			setLength(ulen8 _len)			{ ASSERT(_len.blen() < max_); len_=_len; }
 
-			virtual bool			isEmpty() const					{ return len_ == 0; }
+			virtual bool			isEmpty() const					{ return len_.clen() == 0; }
+			virtual void			setEmpty()						{ len_=ulen8(); terminateWithZero(); }
 
-			virtual ustr8*			getPointer()					{ return data_; }
-			virtual const ustr8*	getPointer() const				{ return data_; }
+			virtual uptr8			getPtr()						{ return uptr8(data_); }
+			virtual ucptr8			getCPtr() const					{ return ucptr8(data_); }
 
 			virtual bool			isReadonly() const				{ return false; }
 			virtual bool			isGrowable() const				{ return false; }
 
-			virtual void			terminateWithZero()				{ data_[len_].c='\0'; data_[len_+1].c='\0';}
+			virtual void			terminateWithZero()				{ data_[len_.blen()].c='\0'; data_[(u32)len_.blen()+1].c='\0';}
 
 			// Reference counting interface
 			virtual void			bind()							{ }
 			virtual void			unbind()						{ }
 
 			// Dynamic buffer interface
-			virtual void			setLength(u32 _len)				{ ASSERT(_len < max_); len_= _len; }
 			virtual void			resize(u32)						{ }
 			virtual void			unique()						{ }
-			virtual void			setEmpty()						{ len_=0; terminateWithZero(); }
 
-			xcstring				get();
+			xcstring				get()							{ return xcstring(this); }
 
 		private:
 			ustr8*					data_;
 			u32						max_;
-			u32						len_;
+			ulen8					len_;
 		};
 
 		inline         		xcstring				(void)															{ }
+		inline         		xcstring				(data* _data) : __base(_data)									{ }
 							xcstring				(void* buffer, s32 bufferSize);
 							xcstring				(void* buffer, s32 bufferSize, const char* str);
 							xcstring				(void* buffer, s32 bufferSize, const char* formatString, const x_va_list& args);
@@ -467,8 +504,7 @@ namespace xcore
 		s32					appendFormat			(const char* inFormat, const x_va& v1=x_va::sEmpty, const x_va& v2=x_va::sEmpty, const x_va& v3=x_va::sEmpty, const x_va& v4=x_va::sEmpty, const x_va& v5=x_va::sEmpty, const x_va& v6=x_va::sEmpty, const x_va& v7=x_va::sEmpty, const x_va& v8=x_va::sEmpty, const x_va& v9=x_va::sEmpty, const x_va& v10=x_va::sEmpty);
 		s32					appendFormatV			(const char* inFormat, const x_va_list& Args);
 
-		char&				operator []				(s32 inIndex);
-		char				operator []				(s32 inIndex) const;
+		uchar8				operator []				(s32 inIndex) const;
 
 		xcstring&			operator =				(char inRHS);													///< Copy a char to this string
 		xcstring&			operator =				(const char* inStr);											///< Copy a C-String to this string
@@ -492,20 +528,22 @@ namespace xcore
 	public:
 		typedef				xstring_const_base		__base;
 
-		class data : public xstringdata
+		class data : public idata
 		{
 		public:
-			inline					data() : data_((const ustr8*)""), len_(0)		{ }
-			inline					data(const ustr8* _data) : data_(_data) { len_ = utf::strlen(_data); }
-			inline					data(const ustr8* _data, u32 _len) : data_(_data), len_(_len) { }
+			inline					data() : data_((const ustr8*)""), len_()		{ }
+			inline					data(const ustr8* _data) : data_(_data) { len_ = ulen8::strlen(_data); }
+			inline					data(const ustr8* _data, ulen8 _len) : data_(_data), len_(_len) { }
 
-			virtual s32				getLength() const				{ return len_; }
-			virtual s32				getMaxLength() const			{ return len_; }
+			virtual ulen8			getLength() const				{ return len_; }
+			virtual u32				getReserved() const				{ return len_.blen(); }
+			virtual void			setLength(ulen8)				{ }
 
-			virtual bool			isEmpty() const					{ return len_ == 0; }
+			virtual bool			isEmpty() const					{ return len_.blen() == 0; }
+			virtual void			setEmpty()						{ }
 
-			virtual ustr8*			getPointer()					{ return NULL; }
-			virtual const ustr8*	getPointer() const				{ return data_; }
+			virtual uptr8			getPtr()						{ return uptr8(NULL); }
+			virtual ucptr8			getCPtr() const					{ return ucptr8(data_); }
 
 			virtual bool			isReadonly() const				{ return true; }
 			virtual bool			isGrowable() const				{ return false; }
@@ -517,22 +555,21 @@ namespace xcore
 			virtual void			unbind()						{ }
 
 			// Dynamic buffer interface
-			virtual void			setLength(u32)					{ }
 			virtual void			resize(u32)						{ }
 			virtual void			unique()						{ }
-			virtual void			setEmpty()						{ }
 
-			xccstring				get();
+			void					set(ustr8* _str, ulen8 _len)	{ data_ = _str; len_ = _len; }
+			xccstring				get()							{ return xccstring(this); }
 
 		private:
 			const ustr8*			data_;
-			u32						len_;
+			ulen8					len_;
 		};
 
 							xccstring				(void);
 		explicit			xccstring				(data* _data) : xstring_const_base(_data)			{ }
 
-		ustr8				operator[]				(s32 inIndex) const;
+		uchar8				operator[]				(s32 inIndex) const;
 		xccstring&			operator =				(const char* str);										///< Assign a 'C' string to this string
 		xccstring&			operator =				(const ustr8* str);										///< Assign a UTF-8 string to this string
 
@@ -543,8 +580,8 @@ namespace xcore
 	xcstring		construct(xcstring::data* _data);
 	xcstring		construct(xcstring::data* _data, const ustr8* str);
 	xcstring		construct(xcstring::data* _data, const ustr8* strA, const ustr8* strB);
-	xcstring		construct(xcstring::data* _data, u32 len, const ustr8* str);
-	xcstring		construct(xcstring::data* _data, u32 lenA, const ustr8* strA, u32 lenB, const ustr8* strB);
+	xcstring		construct(xcstring::data* _data, ulen8 len, const ustr8* str);
+	xcstring		construct(xcstring::data* _data, ulen8 lenA, const ustr8* strA, ulen8 lenB, const ustr8* strB);
 
 	xcstring		construct(xcstring::data* _data, const ustr8* formatString, const x_va_list& args);
 	xcstring		construct(xcstring::data* _data, const ustr8* formatString, const x_va& v1, const x_va& v2=x_va::sEmpty, const x_va& v3=x_va::sEmpty, const x_va& v4=x_va::sEmpty, const x_va& v5=x_va::sEmpty, const x_va& v6=x_va::sEmpty, const x_va& v7=x_va::sEmpty, const x_va& v8=x_va::sEmpty, const x_va& v9=x_va::sEmpty, const x_va& v10=x_va::sEmpty);
@@ -553,33 +590,21 @@ namespace xcore
 	xcstring		construct(xcstring::data* _data, const xcstring& str);
 	xcstring		construct(xcstring::data* _data, const xccstring& str);
 
-
-	class xstringfactory
-	{
-	public:
-		// -------- xstring ---------------------------------------------------------------------------------------------------------------------------------
-
-
-
-		// -------- xcstring ---------------------------------------------------------------------------------------------------------------------------------
-
-
-
-		// -------- xccstring ---------------------------------------------------------------------------------------------------------------------------------
-	};
-
 	// example
 	class test_object
 	{
 	public:
-		inline			test_object() : myconststring((const ustr8*)"This is just # a test!") {}
+		inline			test_object() 
+		: mycstringdata((ustr8*)mychararray, 256)
+		, myconststring((const ustr8*)"This is just # a test!")
+		, myccstringdata(myconststring) {}
 
 		void			example_func()
 		{
 			// this string is const, we can only find etc..
 			xccstring ccstring = myccstringdata.get();
 			// .. do some stuff with ccstring, like:
-			s32 pos = ccstring.find('#');
+			upos8 pos = ccstring.find('#');
 
 			// this string is mutable, we can assign strings to it etc..
 			xcstring cstring = mycstringdata.get();
@@ -597,6 +622,17 @@ namespace xcore
 
 
 	#include "xcore\private\x_string_inline.h"
+
+
+
+
+
+
+//==============================================================================
+// END
+//==============================================================================
+//DOM-IGNORE-END
+
 }
 
 #endif	///< __XBASE_XSTRING_H__
