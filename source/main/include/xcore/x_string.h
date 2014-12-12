@@ -152,15 +152,15 @@ namespace xcore
 		void				repeat					(const xcstring& inString, s32 inTimes);
 		void				repeat					(const xccstring& inString, s32 inTimes);
 
-		s32					format					(const ustr8* formatString, const x_va_list& args);
-		s32					formatAdd				(const ustr8* formatString, const x_va_list& args);
+		ulen8				format					(const ustr8* formatString, const x_va_list& args);
+		ulen8				formatAdd				(const ustr8* formatString, const x_va_list& args);
 
 		void				setAt					(ucpos8 inPos, uchar8 inChar);													///< Set character <inChar> at <inPos>
 		void				setAt					(ucpos8 inPos, const ustr8* inString, uclen8 inNum);							///< Replace character at <inPos> with <inString>
 		void				setAt					(ucpos8 inPos, uclen8 inLen, const ustr8* inString, uclen8 inNum=uclen8());		///< Replace <inNum> characters at <inPos> with <inString>
 
 		void				replace					(ucpos8 inPos, const ustr8* inString, uclen8 inLen=uclen8());					///< Replace character at <inPos> with <inString>
-		void				replace					(ucpos8 inPos, uclen8 inLen, const ustr8* inString, s32 inNum=-1);				///< Replace <inLength> characters at <inPos> with inNumChars characters of <inString>
+		void				replace					(ucpos8 inPos, uclen8 inLen, const ustr8* inString, uclen8 inNum=uclen8());		///< Replace <inLength> characters at <inPos> with inNumChars characters of <inString>
 		s32					replace					(const ustr8* inFind, const ustr8* inSubstitute, ucpos8 inPos=ucpos8());		///< Replace all occurrences of string <inFind> after <inPos> with string <inSubstitute>, returns amount of replacements made
 		s32					replace					(uchar8 inFind, const ustr8* inSubstitute, ucpos8 inPos=ucpos8());				///< Replace all occurrences of character <inFind> after <inPos> with string <inSubstitute>, returns amount of replacements made
 		s32					replace					(const ustr8* inFind, uchar8 inSubstitute, ucpos8 inPos=ucpos8());				///< Replace all occurrences of string <inFind> after <inPos> with char <inSubstitute>, returns amount of replacements made
@@ -222,7 +222,7 @@ namespace xcore
 
 	protected:
 		void				concat					(const ustr8* inSource);												///< Concatenate <inSource> to this string
-		void				concat					(const ustr8* inSource, ulen8 inLength);								///< Concatenate string with <inLength> characters from <inSource>
+		void				concat					(const ustr8* inSource, uclen8 inLength);								///< Concatenate string with <inLength> characters from <inSource>
 	};
 
 

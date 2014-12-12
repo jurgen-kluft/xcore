@@ -14,7 +14,7 @@ namespace xcore
 {
 	namespace utf
 	{
-		s32		x_vsprintf(ustr8* _dst_str, u32 _dst_str_max_len, const ustr8* _format, x_va_list const& _va_list)
+		ulen8		x_vsprintf(uptr8 _dst_str, u32 _dst_str_max_len, const ustr8* _format, x_va_list const& _va_list)
 		{
 			return 0;
 		}
@@ -785,14 +785,11 @@ namespace xcore
 
 	void				xstring_const_base::mid(ucpos8 inPosition, xcstring& outMid, uclen8 inNum) const
 	{
-		const ulen8 l = len();
-		ASSERT(l.clen().in_range(inPosition));								// Must start to grab within string
-		ASSERT((inNum.is_empty()) || (inPosition+inNum<=l.clen()));			// Can't grab beyond end of string
+		const ulen8 l8 = len();
+		inPosition = l8.clamp(inPosition);
+		inNum = l8.clamp(inPosition, inNum);
 
-		inPosition = x_intu::min((s32)inPosition, (s32)(u32)l.clen());
-		inNum = (inNum==-1) ? (l-ulen8(inPosition)).clen() : (x_intu::min(inNum, (s32)(u32)((l-ulen8(inPosition)).clen())));
-
-		const ustr8* buffer =cbegin().str();
+		const ustr8* buffer = cbegin().str();
 		outMid.copy(buffer+inPosition, inNum);
 	}
 
@@ -830,7 +827,7 @@ namespace xcore
 			return xFALSE;
 
 		// Split string
-		split(split_pos, true, outLeft, outRight);
+		split(split_pos.cpos(), true, outLeft, outRight);
 		return xTRUE;
 	}
 
@@ -841,11 +838,11 @@ namespace xcore
 	{
 		// Find the split character
 		upos8 split_pos = rfind(inChar);
-		if (split_pos == -1) 
+		if (!split_pos.is_valid()) 
 			return xFALSE;
 
 		// Split string
-		split(split_pos, xTRUE, outLeft, outRight);
+		split(split_pos.cpos(), xTRUE, outLeft, outRight);
 		return xTRUE;
 	}
 
@@ -854,11 +851,11 @@ namespace xcore
 
 	void				xstring_const_base::split(ucpos8 inPosition, bool inRemove, xstring& outLeft, xstring& outRight) const
 	{
-		XBOUNDS(inPosition, 0, len());
-		XBOUNDS(inPosition + ((int)inRemove), 0, len());
+		ASSERT(len().in_range(inPosition));
+		ASSERT(len().in_range(inPosition + (u32)(inRemove ? 1 : 0)));
 
 		left(inPosition, outLeft);
-		mid(inPosition + ((int)inRemove), outRight);
+		mid(inPosition + ((u32)inRemove), outRight);
 	}
 
 	// xcstring version
@@ -874,7 +871,7 @@ namespace xcore
 
 	void				xstring_const_base::substring(ucpos8 inPosition, xcstring& outSubstring) const
 	{
-		mid(inPosition, outSubstring, len()-inPosition);
+		mid(inPosition, outSubstring, len().cpos() - inPosition);
 	}
 
 
@@ -885,11 +882,11 @@ namespace xcore
 	{
 		// Find the split character
 		upos8 split_pos = find(inChar);
-		if (split_pos == -1) 
+		if (!split_pos.is_valid())
 			return xFALSE;
 
 		// Split string
-		split(split_pos, true, outLeft, outRight);
+		split(split_pos.cpos(), true, outLeft, outRight);
 		return xTRUE;
 	}
 
@@ -900,11 +897,11 @@ namespace xcore
 	{
 		// Find the split character
 		upos8 split_pos = rfind(inChar);
-		if (split_pos == -1) 
+		if (!split_pos.is_valid())
 			return xFALSE;
 
 		// Split string
-		split(split_pos, xTRUE, outLeft, outRight);
+		split(split_pos.cpos(), xTRUE, outLeft, outRight);
 		return xTRUE;
 	}
 
@@ -912,11 +909,11 @@ namespace xcore
 
 	void				xstring_const_base::split(ucpos8 inPosition, bool inRemove, xcstring& outLeft, xcstring& outRight) const
 	{
-		XBOUNDS(inPosition, 0, len());
-		XBOUNDS(inPosition + ((int)inRemove), 0, len());
+		ASSERT(len().in_range(inPosition));
+		ASSERT(len().in_range(inPosition + (u32)(inRemove ? 1 : 0)));
 
 		left(inPosition, outLeft);
-		mid(inPosition + (inRemove ? 1 : 0), outRight);
+		mid(inPosition + (u32)(inRemove ? 1 : 0), outRight);
 	}
 
 	//------------------------------------------------------------------------------
@@ -955,11 +952,6 @@ namespace xcore
 
 	// ---------------------------------------------------------------------------------------------------------------------------
 
-	void			xstring_mutable_base::repeat(const char* inString, s32 inTimes)
-	{
-		repeat(inString, inTimes, -1);
-	}
-
 	void			xstring_mutable_base::repeat(const ustr8* inString, s32 inTimes)
 	{
 		repeat(inString, inTimes, -1);
@@ -967,17 +959,12 @@ namespace xcore
 
 	// ---------------------------------------------------------------------------------------------------------------------------
 
-	void			xstring_mutable_base::repeat(const char* inString, s32 inTimes, s32 inStringLength)
-	{
-		repeat((const ustr8*)inString, inTimes, inStringLength);
-	}
-
-	void			xstring_mutable_base::repeat(const ustr8* inString, s32 inTimes, s32 inStringLength)
+	void			xstring_mutable_base::repeat(const ustr8* inString, s32 inTimes, uclen8 inStringLength)
 	{
 		ASSERT(inTimes >= 0);
 
 		// Make sure string length is valid
-		if (inStringLength < 0)
+		if (inStringLength.is_empty())
 			inStringLength = utf::strlen(inString);	// If not given, determine string length
 
 		// Construct return string
@@ -989,37 +976,37 @@ namespace xcore
 
 	void			xstring_mutable_base::repeat	(const xstring& inString, s32 inTimes)
 	{
-		repeat(inString.c_str(), inTimes, inString.len());
+		repeat(inString.cbegin().str(), inTimes, inString.len().clen());
 	}
 
 
 	void			xstring_mutable_base::repeat	(const xcstring& inString, s32 inTimes)
 	{
-		repeat(inString.c_str(), inTimes, inString.len());
+		repeat(inString.cbegin().str(), inTimes, inString.len().clen());
 	}
 
 
 	void			xstring_mutable_base::repeat	(const xccstring& inString, s32 inTimes)
 	{
-		repeat(inString.c_str(), inTimes, inString.len());
+		repeat(inString.cbegin().str(), inTimes, inString.len().clen());
 	}
 
 
-	s32				xstring_mutable_base::format				(const char* formatString, const x_va_list& args)
+	ulen8			xstring_mutable_base::format	(const ustr8* formatString, const x_va_list& args)
 	{
-		ustr8* buffer = __const_base::mBuffer->getPtr();
-		s32 len = utf::x_vsprintf(buffer, __const_base::mBuffer->lenInBytesMax(), (const ustr8*)formatString, args);
+		uptr8 buffer = __const_base::mBuffer->getPtr();
+		ulen8 len = utf::x_vsprintf(buffer, __const_base::mBuffer->getReserved(), formatString, args);
 		__const_base::mBuffer->setLength(len);
 		__const_base::mBuffer->terminateWithZero();
 		return len;
 	}
 
 
-	s32				xstring_mutable_base::formatAdd			(const char* formatString, const x_va_list& args)
+	ulen8			xstring_mutable_base::formatAdd(const ustr8* formatString, const x_va_list& args)
 	{
-		ustr8* buffer = __const_base::mBuffer->getPtr();
-		s32 added = utf::x_vsprintf(buffer + __const_base::mBuffer->lenInBytes(), __const_base::mBuffer->lenInBytesMax(), (const ustr8*)formatString, args);
-		__const_base::mBuffer->setLengthInBytes(__const_base::mBuffer->lenInBytes() + added);
+		uptr8 buffer = __const_base::mBuffer->getPtr();
+		ulen8 added = utf::x_vsprintf(buffer + __const_base::mBuffer->getLength(), __const_base::mBuffer->getReserved(), formatString, args);
+		__const_base::mBuffer->setLength(__const_base::mBuffer->getLength() + added);
 		__const_base::mBuffer->terminateWithZero();
 		return added;
 	}
@@ -1027,7 +1014,7 @@ namespace xcore
 
 
 
-	void			xstring_mutable_base::setAt	(u32 inPosition, char inChar)
+	void			xstring_mutable_base::setAt(ucpos8 inPosition, uchar8 inChar)
 	{
 		ASSERT(!__const_base::mBuffer->isEmpty());
 		ASSERT(inPosition < __const_base::len());
@@ -1037,25 +1024,25 @@ namespace xcore
 	}
 
 
-	void			xstring_mutable_base::setAt	(u32 inPosition, const char* inString, s32 inNum)
+	void			xstring_mutable_base::setAt(ucpos8 inPosition, const ustr8* inString, uclen8 inNum)
 	{
 		replace(inPosition, inString, inNum);
 	}
 
 
-	void			xstring_mutable_base::setAt	(u32 inPosition, s32 inLen, const char* inString, s32 inNum)
+	void			xstring_mutable_base::setAt(ucpos8 inPosition, uclen8 inLen, const ustr8* inString, uclen8 inNum)
 	{
 		replace(inPosition, inLen, inString, inNum);
 	}
 
 
-	void			xstring_mutable_base::replace(u32 inPosition, const char* inString, s32 inNum)
+	void			xstring_mutable_base::replace(ucpos8 inPosition, const ustr8* inString, uclen8 inNum)
 	{
 		replace(inPosition, 1, inString, inNum);
 	}
 
 
-	void			xstring_mutable_base::replace(u32 inPosition, s32 inLength, const char* inString, s32 inNumChars)
+	void			xstring_mutable_base::replace(ucpos8 inPosition, uclen8 inLength, const ustr8* inString, uclen8 inNumChars)
 	{
 		const ulen8 length = len();
 		inNumChars = (inNumChars==-1) ? (x_strlen(inString)) : (inNumChars);
