@@ -1,10 +1,303 @@
-#ifndef SPU
-
-
 //==============================================================================
 // INCLUDES
 //==============================================================================
 #include "xcore\x_string.h"
+
+#include "xbase\x_debug.h"
+#include "xbase\x_memory_std.h"
+#include "xbase\x_allocator.h"
+#include "xbase\x_string_ascii.h"
+#include "xbase\x_string_utf.h"
+#include "xbase\x_integer.h"
+
+namespace xcore
+{
+	namespace utf
+	{
+		s32		x_vsprintf(ustr8* _dst_str, u32 _dst_str_max_len, const ustr8* _format, x_va_list const& _va_list)
+		{
+			return 0;
+		}
+
+		bool	x_strIsUpper(const ustr8* _str, ulen8 _len_in_bytes)
+		{
+			return false;
+		}
+
+		bool	x_strIsLower(const ustr8* _str, ulen8 _len_in_bytes)
+		{
+			return false;
+		}
+
+		bool	x_strIsCapitalized(const ustr8* _str, ulen8 _len_in_bytes)
+		{
+			return false;
+		}
+
+
+		bool	x_strStartsWith(const ustr8* _str, ulen8 _len_in_bytes, const ustr8* _start_str)
+		{
+			return false;
+		}
+
+		bool	x_strEndsWith(const ustr8* _str, ulen8 _len_in_bytes, const ustr8* _start_str)
+		{
+			return false;
+		}
+
+		s32		x_strCompare(const ustr8* _str1, ulen8 _len_in_bytes, const ustr8* _str2, u32 _num_chars)
+		{
+			return 0;
+		}
+
+		s32		x_strCompareNoCase(const ustr8* _str1, ulen8 _len_in_bytes, const ustr8* _str2, u32 _num_chars)
+		{
+			return 0;
+		}
+
+		bool	x_strEqual(const ustr8* _str1, ulen8 _len_in_bytes, const ustr8* _str2, u32 _num_chars)
+		{
+			return x_strCompare(_str1, _len_in_bytes, _str2, _num_chars) == 0;
+		}
+
+		bool	x_strEqualNoCase(const ustr8* _str1, ulen8 _len_in_bytes, const ustr8* _str2, u32 _num_chars)
+		{
+			return x_strCompareNoCase(_str1, _len_in_bytes, _str2, _num_chars) == 0;
+		}
+
+		upos8			x_strFindInSubstr(const ustr8* _str, uchar8 inChar, u32 inPosition, s32 inCharNum)
+		{
+			return upos8();
+		}
+		upos8			x_strFindInSubstr(const ustr8* _str, const ustr8* _str_to_find, u32 inPosition, s32 inCharNum)
+		{
+			return upos8();
+		}
+		upos8			x_strFindNoCaseInSubstr(const ustr8* _str, uchar8 inChar, u32 inPosition, s32 inCharNum)
+		{
+			return upos8();
+		}
+		upos8			x_strFindNoCaseInSubstr(const ustr8* _str, const ustr8* _str_to_find, u32 inPosition, s32 inCharNum)
+		{
+			return upos8();
+		}
+		upos8			x_strRFind(const ustr8* _str, uchar8 inChar, u32 inPosition, s32 inLen)
+		{
+			return upos8();
+		}
+		upos8			x_strRFind(const ustr8* _str, const ustr8* _str_to_find, u32 inPosition, s32 inLen)
+		{
+			return upos8();
+		}
+		upos8			x_strFindOneOf(const ustr8* _str, const ustr8* inCharSet, u32 inPosition, ulen8 inLen)
+		{
+			return upos8();
+		}
+		upos8			x_strRFindOneOf(const ustr8* _str, const ustr8* inCharSet, u32 inPosition, ulen8 inLen)
+		{
+			return upos8();
+		}
+	}
+}
+
+
+namespace xcore
+{
+	//==============================================================================
+	// All buffer data instances
+	//==============================================================================
+	class xstring_idata
+	{
+	public:
+		virtual ulen8			getLength() const = 0;
+		virtual u32				getReserved() const = 0;
+		virtual void			setLength(ulen8) = 0;
+
+		virtual bool			isEmpty() const = 0;
+		virtual void			setEmpty() = 0;
+
+		virtual uptr8			getPtr() = 0;
+		virtual ucptr8			getCPtr() const = 0;
+
+		virtual bool			isReadonly() const = 0;
+		virtual bool			isGrowable() const = 0;
+
+		virtual void			copyFrom(ustr8 const* _str, ulen8 _len) = 0;
+
+		virtual void			terminateWithZero() = 0;
+
+		// Reference counting interface
+		virtual void			bind() = 0;
+		virtual void			unbind() = 0;
+
+		// Dynamic buffer interface
+		virtual void			resize(u32) = 0;
+		virtual void			unique() = 0;
+	};
+
+
+	class xcstring_data : public xstring_idata
+	{
+	public:
+		inline					xcstring_data() : data_(0), max_(0), len_()		{ }
+		inline					xcstring_data(ustr8* _data, u32 _max, ulen8 _len=ulen8()) : data_(_data), max_(_max), len_(_len) { }
+
+		virtual ulen8			getLength() const				{ return len_; }
+		virtual u32				getReserved() const				{ return len_.blen(); }
+		virtual void			setLength(ulen8 _len)			{ ASSERT(_len.blen() < max_); len_=_len; }
+
+		virtual bool			isEmpty() const					{ return len_.is_empty(); }
+		virtual void			setEmpty()						{ len_=ulen8(); terminateWithZero(); }
+
+		virtual uptr8			getPtr()						{ return uptr8(data_); }
+		virtual ucptr8			getCPtr() const					{ return ucptr8(data_); }
+
+		virtual bool			isReadonly() const				{ return false; }
+		virtual bool			isGrowable() const				{ return false; }
+
+		virtual void			copyFrom(ustr8 const* _str, ulen8 _len);
+
+		virtual void			terminateWithZero()				{ data_[len_.blen()].c='\0'; data_[(u32)len_.blen()+1].c='\0';}
+
+		// Reference counting interface
+		virtual void			bind()							{ }
+		virtual void			unbind()						{ }
+
+		// Dynamic buffer interface
+		virtual void			resize(u32)						{ }
+		virtual void			unique()						{ }
+
+		xcstring				get()							{ return xcstring(this); }
+
+		xcstring				construct();
+		xcstring				construct(const ustr8* str);
+		xcstring				construct(const ustr8* strA, const ustr8* strB);
+		xcstring				construct(ulen8 len, const ustr8* str);
+		xcstring				construct(ulen8 lenA, const ustr8* strA, ulen8 lenB, const ustr8* strB);
+
+		xcstring				construct(const ustr8* formatString, const x_va_list& args);
+		xcstring				construct(const ustr8* formatString, const x_va& v1, const x_va& v2=x_va::sEmpty, const x_va& v3=x_va::sEmpty, const x_va& v4=x_va::sEmpty, const x_va& v5=x_va::sEmpty, const x_va& v6=x_va::sEmpty, const x_va& v7=x_va::sEmpty, const x_va& v8=x_va::sEmpty, const x_va& v9=x_va::sEmpty, const x_va& v10=x_va::sEmpty);
+
+		xcstring				construct(const xstring& str);
+		xcstring				construct(const xcstring& str);
+		xcstring				construct(const xccstring& str);
+
+	private:
+		ustr8*					data_;
+		u32						max_;
+		ulen8					len_;
+	};
+
+	class xstring_data : public xstring_idata
+	{
+		static const s32 DEFAULT_STRING_LENGTH_IN_BYTES = 64;
+
+		inline	void init() 
+		{
+			data_[0].c='\0';
+			data_[1].c='\0';
+			data_[2].c='h'; 
+			data_[3].c='e'; 
+			data_[4].c='a'; 
+			data_[5].c='p'; 
+			data_[6].c='\0';
+			data_[7].c='\0';
+		}
+
+	public:
+		inline					xstring_data(x_iallocator* _alloc) : alloc_(_alloc), ref_(0), len_(), max_(0) { init(); }
+		inline					xstring_data(x_iallocator* _alloc, s32 _ref, ulen8 _len, u32 _max) : alloc_(_alloc), ref_(_ref), len_(_len), max_(_max) { init(); }
+
+		virtual ulen8			getLength() const				{ return len_; }
+		virtual u32				getReserved() const				{ return max_; }
+		virtual void			setLength(ulen8 _len);
+
+		virtual bool			isEmpty() const					{ return len_.is_empty(); }
+		virtual void			setEmpty();
+
+		virtual uptr8			getPtr()						{ return uptr8(data_); }
+		virtual ucptr8			getCPtr() const					{ return ucptr8(data_); }
+
+		virtual bool			isReadonly() const				{ return false; }
+		virtual bool			isGrowable() const				{ return true; }
+
+		virtual void			copyFrom(ustr8 const* _str, ulen8 _len);
+
+		virtual void			terminateWithZero()				{ data_[len_.blen()].c='\0'; data_[(u32)len_.blen()+1].c='\0';}
+
+		// Reference counting interface
+		virtual void			bind()							{ ++ref_; }
+		virtual void			unbind()						{ if (--ref_ <= 0) alloc_->deallocate(this); }
+
+		// Dynamic buffer interface
+		virtual void			resize(u32);
+		virtual void			unique();
+
+		xstring_data*			clone();
+
+		xstring					construct();
+		xstring					construct(u32 inLength);
+		xstring					construct(const char* inStr);
+		xstring					construct(const char* inStr, u32 length);
+		xstring					construct(const char* inStrA, u32 inStrLengthA, const char* inStrB, u32 inStrLengthB);
+		xstring					construct(const ustr8* inStr);
+		xstring					construct(const ustr8* inStr, u32 length);
+		xstring					construct(const ustr8* inStrA, u32 inStrLengthA, const ustr8* inStrB, u32 inStrLengthB);
+		xstring					construct(const xstring& inStr);
+		xstring					construct(const xcstring& inStr);
+		xstring					construct(const xccstring& inStr);
+		xstring					construct(const char* inFormat, const x_va& v1=x_va::sEmpty, const x_va& v2=x_va::sEmpty, const x_va& v3=x_va::sEmpty, const x_va& v4=x_va::sEmpty, const x_va& v5=x_va::sEmpty, const x_va& v6=x_va::sEmpty, const x_va& v7=x_va::sEmpty, const x_va& v8=x_va::sEmpty, const x_va& v9=x_va::sEmpty, const x_va& v10=x_va::sEmpty);
+		xstring					construct(const ustr8* inFormat, const x_va& v1=x_va::sEmpty, const x_va& v2=x_va::sEmpty, const x_va& v3=x_va::sEmpty, const x_va& v4=x_va::sEmpty, const x_va& v5=x_va::sEmpty, const x_va& v6=x_va::sEmpty, const x_va& v7=x_va::sEmpty, const x_va& v8=x_va::sEmpty, const x_va& v9=x_va::sEmpty, const x_va& v10=x_va::sEmpty);
+
+	private:
+		x_iallocator*			alloc_;
+		s32						ref_;										///< Reference count (should be atomic in multi-threaded environment)
+		ulen8					len_;
+		u32						max_;
+		ustr8					data_[DEFAULT_STRING_LENGTH_IN_BYTES];		///< String data (allocated with sAlloc so that it is large enough to fit the string)
+	};
+
+	class xccstring_data : public xstring_idata
+	{
+	public:
+		inline					xccstring_data() : data_((const ustr8*)""), len_()		{ }
+		inline					xccstring_data(const char* _data) : data_((const ustr8*)_data) { len_ = ulen8::strlen(data_); }
+		inline					xccstring_data(const ustr8* _data) : data_(_data) { len_ = ulen8::strlen(_data); }
+		inline					xccstring_data(const ustr8* _data, ulen8 _len) : data_(_data), len_(_len) { }
+
+		virtual ulen8			getLength() const				{ return len_; }
+		virtual u32				getReserved() const				{ return len_.blen(); }
+		virtual void			setLength(ulen8)				{ }
+
+		virtual bool			isEmpty() const					{ return len_.is_empty(); }
+		virtual void			setEmpty()						{ }
+
+		virtual uptr8			getPtr()						{ return uptr8(NULL); }
+		virtual ucptr8			getCPtr() const					{ return ucptr8(data_); }
+
+		virtual bool			isReadonly() const				{ return true; }
+		virtual bool			isGrowable() const				{ return false; }
+
+		virtual void			copyFrom(ustr8 const* _str, ulen8 _len) { }
+
+		virtual void			terminateWithZero()				{ }
+
+		// Reference counting interface
+		virtual void			bind()							{ }
+		virtual void			unbind()						{ }
+
+		// Dynamic buffer interface
+		virtual void			resize(u32)						{ }
+		virtual void			unique()						{ }
+
+		void					set(ustr8* _str, ulen8 _len)	{ data_ = _str; len_ = _len; }
+		xccstring				get()							{ return xccstring(this); }
+
+	private:
+		const ustr8*			data_;
+		ulen8					len_;
+	};
+}
 
 /**
  * xCore namespace
@@ -20,46 +313,59 @@ namespace xcore
 
 
 	//------------------------------------------------------------------------------
+	xstring_const_base::xstring_const_base(const xstring_const_base& _i) 
+		: mBuffer(_i.mBuffer)
+	{
+		mBuffer->bind(); 
+	}
 
-	inline ulen8 xstring_const_base::len(void) const
+	//------------------------------------------------------------------------------
+	xstring_const_base::~xstring_const_base()
+	{
+		mBuffer->unbind(); 
+	}
+
+	//------------------------------------------------------------------------------
+
+	ulen8 xstring_const_base::len(void) const
 	{
 		return mBuffer->getLength(); 
 	}
 
 	//------------------------------------------------------------------------------
 
-	inline bool xstring_const_base::isEmpty(void) const
+	bool xstring_const_base::isEmpty(void) const
 	{
 		return mBuffer->isEmpty(); 
 	}
 
 	//------------------------------------------------------------------------------
 
-	inline bool xstring_const_base::isUpper(void) const
+	bool xstring_const_base::isUpper(void) const
 	{
-		return utf::x_strIsUpper(c_str(), len());
+		return utf::x_strIsUpper(cbegin().str(), len());
 	}
 
 	//------------------------------------------------------------------------------
 
 
-	inline bool xstring_const_base::isLower(void) const
+	bool xstring_const_base::isLower(void) const
 	{
-		return utf::x_strIsLower(c_str(), len());
+		return utf::x_strIsLower(cbegin().str(), len());
 	}
 
 	//------------------------------------------------------------------------------
 
 
-	inline bool xstring_const_base::isCapitalized(void) const
+	bool xstring_const_base::isCapitalized(void) const
 	{
-		return utf::x_strIsCapitalized(c_str(), len());
+		return utf::x_strIsCapitalized(cbegin().str(), len());
 	}
 
 	//------------------------------------------------------------------------------
 
 
-	inline bool xstring_const_base::isQuoted(void) const
+	bool xstring_const_base::isQuoted(void) const
 	{
 		return isQuoted('\"');
 	}
@@ -67,58 +373,58 @@ namespace xcore
 	//------------------------------------------------------------------------------
 
 
-	inline bool xstring_const_base::isQuoted(char quote) const
+	bool xstring_const_base::isQuoted(uchar8 quote) const
 	{
-		return firstChar()==uchar8(quote) && lastChar()==uchar8(quote);
+		return firstChar()==quote && lastChar()==quote;
 	}
 
 	//------------------------------------------------------------------------------
 
 
-	inline bool xstring_const_base::isDelimited(char left, char right) const
+	bool xstring_const_base::isDelimited(uchar8 left, uchar8 right) const
 	{
-		return firstChar()==uchar8(left) && lastChar()==uchar8(right);
+		return firstChar()==left && lastChar()==right;
 	}
 
 	//------------------------------------------------------------------------------
 
-	inline uchar8 xstring_const_base::getAt(s32 inPosition) const
+	uchar8 xstring_const_base::getAt(ucpos8 inPosition) const
 	{
 		ASSERT(inPosition>=0 && inPosition<len().clen());
-		ucptr8 p = ucptr8(c_str());
-		ulen8 l = ulen8::at(mBuffer->getPtr().str(), ucpos8(inPosition));
+		ucptr8 p = cbegin();
+		ulen8 l = ulen8::at(mBuffer->getPtr().str(), inPosition);
 		uchar8 c = *(p + l);
 		return c;
 	}
 
 	//------------------------------------------------------------------------------
 
-	inline uchar8 xstring_const_base::firstChar(void) const
+	uchar8 xstring_const_base::firstChar(void) const
 	{
 		if (isEmpty())
-			return uchar8(0);
+			return uchar8('\0');
 
-		ucptr8 p = ucptr8(c_str());
+		ucptr8 p = cbegin();
 		uchar8 c = *p;
 		return c;
 	}
 
 	//------------------------------------------------------------------------------
 
-	inline uchar8 xstring_const_base::lastChar(void) const
+	uchar8 xstring_const_base::lastChar(void) const
 	{
-		uchar8 c(0);
+		uchar8 c('\0');
 		if (isEmpty())
 			return c;
 
-		ucptr8 p = ucptr8(c_str()) - 1;
+		ucptr8 p = cend() - 1;
 		c = *p;
 		return c;
 	}
 
 	//------------------------------------------------------------------------------
 
-	inline bool xstring_const_base::startsWith(char inChar) const
+	bool xstring_const_base::startsWith(uchar8 inChar) const
 	{
 		const uchar8 c = firstChar();
 		return c == uchar8(inChar);
@@ -127,14 +433,14 @@ namespace xcore
 	//------------------------------------------------------------------------------
 
 
-	inline bool xstring_const_base::startsWith(const char* inStartStr) const
+	bool xstring_const_base::startsWith(const ustr8* inStartStr) const
 	{
-		return utf::x_strStartsWith(c_str(), len(), (const ustr8*)inStartStr);
+		return utf::x_strStartsWith(cbegin().str(), len(), (const ustr8*)inStartStr);
 	}
 
 	//------------------------------------------------------------------------------
 
-	inline bool xstring_const_base::endsWith(char inChar) const
+	bool xstring_const_base::endsWith(uchar8 inChar) const
 	{
 		const uchar8 c = lastChar();
 		return c == uchar8(inChar);
@@ -143,9 +449,9 @@ namespace xcore
 	//------------------------------------------------------------------------------
 
 
-	inline bool xstring_const_base::endsWith(const char* inEndStr) const
+	bool xstring_const_base::endsWith(const ustr8* inEndStr) const
 	{
-		return utf::x_strEndsWith(c_str(), len(), (const ustr8*)inEndStr);
+		return utf::x_strEndsWith(cbegin().str(), len(), (const ustr8*)inEndStr);
 	}
 
 	///@name Comparison
@@ -153,145 +459,145 @@ namespace xcore
 	//------------------------------------------------------------------------------
 
 
-	s32					xstring_const_base::compare(const char* inRHS, s32 inCharNum) const
+	s32					xstring_const_base::compare(const ustr8* inRHS, uclen8 inCharNum) const
 	{
-		inCharNum = (inCharNum==-1) ? (x_strlen(inRHS)) : inCharNum;
-		return utf::x_strCompare(c_str(), len(), (const ustr8*)inRHS, inCharNum);
+		inCharNum = (inCharNum.is_empty()) ? (utf::strlen(inRHS)) : inCharNum;
+		return utf::x_strCompare(cbegin().str(), len(), inRHS, inCharNum);
 	}
 
 	//------------------------------------------------------------------------------
 
 
-	s32					xstring_const_base::compare(const xstring& inRHS, s32 inCharNum) const
+	s32					xstring_const_base::compare(const xstring& inRHS, uclen8 inCharNum) const
 	{
-		inCharNum = (inCharNum==-1) ? (inRHS.len().clen()) : inCharNum;
-		return utf::x_strCompare(c_str(), len(), inRHS.c_str(), inCharNum);
+		inCharNum = (inCharNum.is_empty()) ? (inRHS.len().clen()) : inCharNum;
+		return utf::x_strCompare(cbegin().str(), len(), inRHS.cbegin().str(), inCharNum);
 	}
 
 	//------------------------------------------------------------------------------
 
 
-	s32					xstring_const_base::compare(const xcstring& inRHS, s32 inCharNum) const
+	s32					xstring_const_base::compare(const xcstring& inRHS, uclen8 inCharNum) const
 	{
-		inCharNum = (inCharNum==-1) ? (inRHS.len().clen()) : inCharNum;
-		return utf::x_strCompare(c_str(), len(), inRHS.c_str(), inCharNum);
+		inCharNum = (inCharNum.is_empty()) ? (inRHS.len().clen()) : inCharNum;
+		return utf::x_strCompare(cbegin().str(), len(), inRHS.cbegin().str(), inCharNum);
 	}
 
 	//------------------------------------------------------------------------------
 
 
-	s32					xstring_const_base::compare(const xccstring& inRHS, s32 inCharNum) const
+	s32					xstring_const_base::compare(const xccstring& inRHS, uclen8 inCharNum) const
 	{
-		inCharNum = (inCharNum==-1) ? (inRHS.len().clen()) : inCharNum;
-		return utf::x_strCompare(c_str(), len(), inRHS.c_str(), inCharNum);
+		inCharNum = (inCharNum.is_empty()) ? (inRHS.len().clen()) : inCharNum;
+		return utf::x_strCompare(cbegin().str(), len(), inRHS.cbegin().str(), inCharNum);
 	}
 
 	//------------------------------------------------------------------------------
 
 
-	s32					xstring_const_base::compareNoCase(const char* inRHS, s32 inCharNum) const
+	s32					xstring_const_base::compareNoCase(const ustr8* inRHS, uclen8 inCharNum) const
 	{
-		inCharNum = (inCharNum==-1) ? (x_strlen(inRHS)) : inCharNum;
-		return utf::x_strCompareNoCase(c_str(), len(), (const ustr8*)inRHS, inCharNum);
+		inCharNum = (inCharNum.is_empty()) ? (utf::strlen(inRHS)) : inCharNum;
+		return utf::x_strCompareNoCase(cbegin().str(), len(), inRHS, inCharNum);
 	}
 
 	//------------------------------------------------------------------------------
 
 
-	s32					xstring_const_base::compareNoCase(const xstring& inRHS, s32 inCharNum) const
+	s32					xstring_const_base::compareNoCase(const xstring& inRHS, uclen8 inCharNum) const
 	{
-		inCharNum = (inCharNum==-1) ? (inRHS.len().clen()) : inCharNum;
-		return utf::x_strCompareNoCase(c_str(), len(), inRHS.c_str(), inCharNum);
+		inCharNum = (inCharNum.is_empty()) ? (inRHS.len().clen()) : inCharNum;
+		return utf::x_strCompareNoCase(cbegin().str(), len(), inRHS.cbegin().str(), inCharNum);
 	}
 
 	//------------------------------------------------------------------------------
 
 
-	s32					xstring_const_base::compareNoCase(const xcstring& inRHS, s32 inCharNum) const
+	s32					xstring_const_base::compareNoCase(const xcstring& inRHS, uclen8 inCharNum) const
 	{
-		inCharNum = (inCharNum==-1) ? (inRHS.len().clen()) : inCharNum;
-		return utf::x_strCompareNoCase(c_str(), len(), inRHS.c_str(), inCharNum);
+		inCharNum = (inCharNum.is_empty()) ? (inRHS.len().clen()) : inCharNum;
+		return utf::x_strCompareNoCase(cbegin().str(), len(), inRHS.cbegin().str(), inCharNum);
 	}
 
 	//------------------------------------------------------------------------------
 
 
-	s32					xstring_const_base::compareNoCase(const xccstring& inRHS, s32 inCharNum) const
+	s32					xstring_const_base::compareNoCase(const xccstring& inRHS, uclen8 inCharNum) const
 	{
-		inCharNum = (inCharNum==-1) ? (inRHS.len().clen()) : inCharNum;
-		return utf::x_strCompareNoCase(c_str(), len(), inRHS.c_str(), inCharNum);
+		inCharNum = (inCharNum.is_empty()) ? (inRHS.len().clen()) : inCharNum;
+		return utf::x_strCompareNoCase(cbegin().str(), len(), inRHS.cbegin().str(), inCharNum);
 	}
 
 	//------------------------------------------------------------------------------
 
 
-	bool				xstring_const_base::isEqual(const char* inRHS, s32 inCharNum) const
+	bool				xstring_const_base::isEqual(const ustr8* inRHS, uclen8 inCharNum) const
 	{
-		inCharNum = (inCharNum==-1) ? (x_strlen(inRHS)) : inCharNum;
-		return utf::x_strEqual(c_str(), len(), (const ustr8*)inRHS, inCharNum);
+		inCharNum = (inCharNum.is_empty()) ? (utf::strlen(inRHS)) : inCharNum;
+		return utf::x_strEqual(cbegin().str(), len(), inRHS, inCharNum);
 	}
 
 	//------------------------------------------------------------------------------
 
 
-	bool				xstring_const_base::isEqual(const xstring& inRHS, s32 inCharNum) const
+	bool				xstring_const_base::isEqual(const xstring& inRHS, uclen8 inCharNum) const
 	{
-		inCharNum = (inCharNum==-1) ? (inRHS.len().clen()) : inCharNum;
-		return utf::x_strEqual(c_str(), len(), inRHS.c_str(), inCharNum);
+		inCharNum = (inCharNum.is_empty()) ? (inRHS.len().clen()) : inCharNum;
+		return utf::x_strEqual(cbegin().str(), len(), inRHS.cbegin().str(), inCharNum);
 	}
 
 	//------------------------------------------------------------------------------
 
 
-	bool				xstring_const_base::isEqual(const xcstring& inRHS, s32 inCharNum) const
+	bool				xstring_const_base::isEqual(const xcstring& inRHS, uclen8 inCharNum) const
 	{
-		inCharNum = (inCharNum==-1) ? (inRHS.len().clen()) : inCharNum;
-		return utf::x_strEqual(c_str(), len(), inRHS.c_str(), inCharNum);
+		inCharNum = (inCharNum.is_empty()) ? (inRHS.len().clen()) : inCharNum;
+		return utf::x_strEqual(cbegin().str(), len(), inRHS.cbegin().str(), inCharNum);
 	}
 
 	//------------------------------------------------------------------------------
 
 
-	bool				xstring_const_base::isEqual(const xccstring& inRHS, s32 inCharNum) const
+	bool				xstring_const_base::isEqual(const xccstring& inRHS, uclen8 inCharNum) const
 	{
-		inCharNum = (inCharNum==-1) ? (inRHS.len().clen()) : inCharNum;
-		return utf::x_strEqual(c_str(), len(), inRHS.c_str(), inCharNum);
+		inCharNum = (inCharNum.is_empty()) ? (inRHS.len().clen()) : inCharNum;
+		return utf::x_strEqual(cbegin().str(), len(), inRHS.cbegin().str(), inCharNum);
 	}
 
 	//------------------------------------------------------------------------------
 
 
-	bool				xstring_const_base::isEqualNoCase(const char* inRHS, s32 inCharNum) const
+	bool				xstring_const_base::isEqualNoCase(const ustr8* inRHS, uclen8 inCharNum) const
 	{
-		inCharNum = (inCharNum==-1) ? (x_strlen(inRHS)) : inCharNum;
-		return utf::x_strEqualNoCase(c_str(), len(), (const ustr8*)inRHS, inCharNum);
+		inCharNum = (inCharNum.is_empty()) ? (utf::strlen(inRHS)) : inCharNum;
+		return utf::x_strEqualNoCase(cbegin().str(), len(), inRHS, inCharNum);
 	}
 
 	//------------------------------------------------------------------------------
 
 
-	bool				xstring_const_base::isEqualNoCase(const xstring& inRHS, s32 inCharNum) const
+	bool				xstring_const_base::isEqualNoCase(const xstring& inRHS, uclen8 inCharNum) const
 	{
-		inCharNum = (inCharNum==-1) ? (inRHS.len().clen()) : inCharNum;
-		return utf::x_strEqualNoCase(c_str(), len(), inRHS.c_str(), inCharNum);
+		inCharNum = (inCharNum.is_empty()) ? (inRHS.len().clen()) : inCharNum;
+		return utf::x_strEqualNoCase(cbegin().str(), len(), inRHS.cbegin().str(), inCharNum);
 	}
 
 	//------------------------------------------------------------------------------
 
 
-	bool				xstring_const_base::isEqualNoCase(const xcstring& inRHS, s32 inCharNum) const
+	bool				xstring_const_base::isEqualNoCase(const xcstring& inRHS, uclen8 inCharNum) const
 	{
-		inCharNum = (inCharNum==-1) ? (inRHS.len().clen()) : inCharNum;
-		return utf::x_strEqualNoCase(c_str(), len(), inRHS.c_str(), inCharNum);
+		inCharNum = (inCharNum.is_empty()) ? (inRHS.len().clen()) : inCharNum;
+		return utf::x_strEqualNoCase(cbegin().str(), len(), inRHS.cbegin().str(), inCharNum);
 	}
 
 	//------------------------------------------------------------------------------
 
 
-	bool				xstring_const_base::isEqualNoCase(const xccstring& inRHS, s32 inCharNum) const
+	bool				xstring_const_base::isEqualNoCase(const xccstring& inRHS, uclen8 inCharNum) const
 	{
-		inCharNum = (inCharNum==-1) ? (inRHS.len().clen()) : inCharNum;
-		return utf::x_strEqualNoCase(c_str(), len(), inRHS.c_str(), inCharNum);
+		inCharNum = (inCharNum.is_empty()) ? (inRHS.len().clen()) : inCharNum;
+		return utf::x_strEqualNoCase(cbegin().str(), len(), inRHS.cbegin().str(), inCharNum);
 	}
 
 	///@name Search/replace
@@ -299,39 +605,39 @@ namespace xcore
 	//------------------------------------------------------------------------------
 
 
-	upos8				xstring_const_base::find(char inChar, s32 inPosition, s32 inCharNum) const
+	upos8				xstring_const_base::find(uchar8 inChar, ucpos8 inPosition, uclen8 inCharNum) const
 	{
 		ASSERT(inPosition >= 0);
 		const ulen8 n = len();
-		inCharNum = (inCharNum==-1) ? (n.clen()-(u32)inPosition) : inCharNum;
+		inCharNum = (inCharNum.is_empty()) ? (n.clen()-inPosition) : inCharNum;
 		ASSERT((inPosition+inCharNum) <= n.clen());
-		upos8 pos = utf::x_strFindInSubstr(c_str(), uchar8(inChar), inPosition, inCharNum);
+		upos8 pos = utf::x_strFindInSubstr(cbegin().str(), uchar8(inChar), inPosition, inCharNum);
 		return pos;
 	}
 
 	//------------------------------------------------------------------------------
 
 
-	upos8					xstring_const_base::find(const char* inString, s32 inPosition, s32 inCharNum) const
+	upos8					xstring_const_base::find(const ustr8* inString, ucpos8 inPosition, uclen8 inCharNum) const
 	{
 		ASSERT(inPosition >= 0);
 		const ulen8 n = len();
-		inCharNum = (inCharNum==-1) ? (n.clen()-(u32)inPosition) : inCharNum;
+		inCharNum = (inCharNum.is_empty()) ? (n.clen()-inPosition) : inCharNum;
 		ASSERT((inPosition+inCharNum) <= n.clen());
-		upos8 pos = utf::x_strFindInSubstr(c_str(), (const ustr8*)inString, inPosition, inCharNum);
+		upos8 pos = utf::x_strFindInSubstr(cbegin().str(), (const ustr8*)inString, inPosition, inCharNum);
 		return pos;
 	}
 
 	//------------------------------------------------------------------------------
 
 
-	upos8					xstring_const_base::findNoCase(char inChar, s32 inPosition, s32 inCharNum) const
+	upos8					xstring_const_base::findNoCase(uchar8 inChar, ucpos8 inPosition, uclen8 inCharNum) const
 	{
 		ASSERT(inPosition >= 0);
 		const ulen8 n = len();
-		inCharNum = (inCharNum==-1) ? n.clen() : inCharNum;
+		inCharNum = (inCharNum.is_empty()) ? n.clen() : inCharNum;
 		ASSERT((inPosition+inCharNum) <= n.clen());
-		const ustr8* str = c_str();
+		const ustr8* str = cbegin().str();
 		upos8 find_pos = utf::x_strFindNoCaseInSubstr(str, uchar8(inChar), inPosition, inCharNum);
 		return find_pos;
 	}
@@ -339,13 +645,13 @@ namespace xcore
 	//------------------------------------------------------------------------------
 
 
-	upos8					xstring_const_base::findNoCase(const char* inString, s32 inPosition, s32 inCharNum) const
+	upos8					xstring_const_base::findNoCase(const ustr8* inString, ucpos8 inPosition, uclen8 inCharNum) const
 	{
 		ASSERT(inPosition >= 0);
 		const ulen8 n = len();
-		inCharNum = (inCharNum==-1) ? n.clen() : inCharNum;
+		inCharNum = (inCharNum.is_empty()) ? n.clen() : inCharNum;
 		ASSERT((inPosition+inCharNum) <= n.clen());
-		const ustr8* str = c_str();
+		const ustr8* str = cbegin().str();
 		upos8 find_pos = utf::x_strFindNoCaseInSubstr(str, (const ustr8*)inString, inPosition, inCharNum);
 		return find_pos;
 	}
@@ -353,33 +659,33 @@ namespace xcore
 	//------------------------------------------------------------------------------
 
 
-	upos8					xstring_const_base::rfind(char inChar, s32 inPosition, s32 inLen) const
+	upos8					xstring_const_base::rfind(uchar8 inChar, ucpos8 inPosition, uclen8 inLen) const
+	{
+		inPosition = (inPosition==-1) ? (len().clen()-1) : inPosition;
+		inLen = (inLen.is_empty()) ? (inPosition+1) : inLen;
+		ASSERT(inPosition>=0 && inPosition<len().clen());
+		upos8 pos = utf::x_strRFind(cbegin().str(), uchar8(inChar), inPosition, inLen);
+		return pos;
+	}
+
+	//------------------------------------------------------------------------------
+
+
+	upos8					xstring_const_base::rfind(const ustr8* inString, ucpos8 inPosition, uclen8 inLen) const
 	{
 		inPosition = (inPosition==-1) ? (len().clen()-(u32)1) : inPosition;
-		inLen = (inLen==-1) ? (inPosition+1) : inLen;
+		inLen = (inLen.is_empty()) ? (inPosition+1) : inLen;
 		ASSERT(inPosition>=0 && inPosition<len().clen());
-		upos8 pos = utf::x_strRFind(c_str(), uchar8(inChar), inPosition, inLen);
+		upos8 pos = utf::x_strRFind(cbegin().str(), (const ustr8*)inString, inPosition, inLen);
 		return pos;
 	}
 
 	//------------------------------------------------------------------------------
 
 
-	upos8					xstring_const_base::rfind(const char* inString, s32 inPosition, s32 inLen) const
+	upos8					xstring_const_base::findOneOf(const ustr8* inCharSet, ucpos8 inPosition) const
 	{
-		inPosition = (inPosition==-1) ? (len().clen()-(u32)1) : inPosition;
-		inLen = (inLen==-1) ? (inPosition+1) : inLen;
-		ASSERT(inPosition>=0 && inPosition<len().clen());
-		upos8 pos = utf::x_strRFind(c_str(), (const ustr8*)inString, inPosition, inLen);
-		return pos;
-	}
-
-	//------------------------------------------------------------------------------
-
-
-	upos8					xstring_const_base::findOneOf(const char* inCharSet, s32 inPosition) const
-	{
-		upos8 pos = utf::x_strFindOneOf(c_str(), (const ustr8*)inCharSet, inPosition, len());
+		upos8 pos = utf::x_strFindOneOf(cbegin().str(), (const ustr8*)inCharSet, inPosition, len());
 		return pos;
 	}
 
@@ -390,107 +696,110 @@ namespace xcore
 	//------------------------------------------------------------------------------
 
 
-	upos8					xstring_const_base::rfindOneOf(const char* inCharSet, s32 inPosition) const
+	upos8					xstring_const_base::rfindOneOf(const ustr8* inCharSet, ucpos8 inPosition) const
 	{
-		upos8 pos = utf::x_strRFindOneOf(c_str(), (const ustr8*)inCharSet, inPosition, len());
+		upos8 pos = utf::x_strRFindOneOf(cbegin().str(), inCharSet, inPosition, len());
 		return pos;
 	}
 
 	//------------------------------------------------------------------------------
 
 
-	void				xstring_const_base::left(s32 inNum, xstring& outLeft) const
+	void				xstring_const_base::left(uclen8 inNum, xstring& outLeft) const
 	{
-		XBOUNDS(inNum, 0, len().clen());
-		const ustr8* buffer = c_str();
-		outLeft.copy(buffer, x_intu::min(inNum, (s32)len().clen()));
+		XBOUNDS((u32)inNum, 0, (u32)(len().clen()));
+		const ustr8* buffer = cbegin().str();
+		outLeft.copy(buffer, x_intu::min((u32)inNum, (u32)len().clen()));
 	}
 
 	//------------------------------------------------------------------------------
 
 
-	void				xstring_const_base::left(s32 inNum, xcstring& outLeft) const
+	void				xstring_const_base::left(uclen8 inNum, xcstring& outLeft) const
 	{
-		XBOUNDS(inNum, 0, len().clen());
-		const ustr8* buffer = c_str();
-		outLeft.copy(buffer, x_intu::min(inNum, (s32)len().clen()));
+		XBOUNDS((u32)inNum, 0, (u32)len().clen());
+		const ustr8* buffer = cbegin().str();
+		outLeft.copy(buffer, x_intu::min((u32)inNum, (u32)len().clen()));
 	}
 
 	//------------------------------------------------------------------------------
 
 
-	void				xstring_const_base::right(s32 inNum, xstring& outRight) const
+	void				xstring_const_base::right(uclen8 inNum, xstring& outRight) const
 	{
 		const ulen8 l = len();
-		XBOUNDS(inNum, 0, l.clen());
-		const ustr8* buffer = c_str();
-		inNum = x_intu::min(inNum, (s32)l.clen());
-		outRight.copy(buffer + l - inNum, inNum);
+		XBOUNDS((u32)inNum, 0, (u32)l.clen());
+		ucptr8 buffer = cbegin();
+		inNum = x_intu::min((u32)inNum, (u32)l.clen());
+		outRight.copy((buffer + l - inNum).str(), inNum);
 	}
 
 	//------------------------------------------------------------------------------
 
 
-	void				xstring_const_base::right(s32 inNum, xcstring& outRight) const
+	void				xstring_const_base::right(uclen8 inNum, xcstring& outRight) const
 	{
 		const ulen8 l = len();
-		XBOUNDS(inNum, 0, l);
-		const ustr8* buffer = c_str();
-		inNum = x_intu::min(inNum, l);
-		outRight.copy(buffer + l - inNum, inNum);
+		XBOUNDS((u32)inNum, 0, (u32)l.clen());
+		ucptr8 buffer = cbegin();
+		inNum = x_intu::min((u32)inNum, (u32)l.clen());
+		outRight.copy((buffer + l - inNum).str(), inNum);
 	}
 
 	//------------------------------------------------------------------------------
 
 
-	void				xstring_const_base::mid(u32 inPosition, xstring& outMid, s32 inNum) const
+	void				xstring_const_base::mid(ucpos8 inPosition, xstring& outMid, uclen8 inNum) const
 	{
-		const ulen8 l = len();
-		XBOUNDS(inPosition, 0, l);								// Must start to grab within string
-		ASSERT((inNum==-1) || (inPosition+inNum<=l));			// Can't grab beyond end of string
+		ulen8 l = len();
+		ASSERT(l.clen().in_range(inPosition));								// Must start to grab within string
+		ASSERT((inNum.is_empty()) || (inPosition+inNum<=l.clen()));			// Can't grab beyond end of string
 
-		inPosition = x_intu::min((s32)inPosition, l);
-		inNum = (inNum==-1) ? (l-inPosition) : (x_intu::min(inNum, l-(s32)inPosition));
-		const ustr8* buffer = c_str();
+		inPosition = ucpos8::min(inPosition, l.cpos());
+		//inPosition = x_intu::min((s32)inPosition, (s32)(u32)l.clen());
+		//inNum = (inNum==-1) ? (l-ulen8(inPosition)).clen() : (x_intu::min(inNum, (s32)(u32)((l-ulen8(inPosition)).clen())));
+
+		inNum = (inNum.is_empty()) ? (l.cpos() - inPosition) : (ucpos8::min(ucpos8(inNum), l.cpos() - inPosition));
+
+		const ustr8* buffer = cbegin().str();
 		outMid.copy(buffer+inPosition, inNum);
 	}
 
 	//------------------------------------------------------------------------------
 
 
-	xstring				xstring_const_base::mid(u32 inPosition, s32 inNum) const
+	xstring				xstring_const_base::mid(ucpos8 inPosition, uclen8 inNum) const
 	{
+		const ulen8 l8 = len();
+		inPosition = l8.clamp(inPosition);
+		inNum = l8.clamp(inPosition, inNum);
+
+		const ustr8* buffer = cbegin().str();
 		xstring outMid;
-		const ulen8 l = len();
-		XBOUNDS(inPosition, 0, l);								// Must start to grab within string
-		ASSERT((inNum==-1) || (inPosition+inNum<=l));			// Can't grab beyond end of string
-
-		inPosition = x_intu::min((s32)inPosition, l);
-		inNum = (inNum==-1) ? (l-inPosition) : (x_intu::min(inNum, l-(s32)inPosition));
-		const ustr8* buffer = c_str();
-		outMid.copy(buffer+inPosition, inNum);
+		outMid.copy(buffer + inPosition, inNum);
 		return outMid;
 	}
 
 	//------------------------------------------------------------------------------
 
 
-	void				xstring_const_base::mid(u32 inPosition, xcstring& outMid, s32 inNum) const
+	void				xstring_const_base::mid(ucpos8 inPosition, xcstring& outMid, uclen8 inNum) const
 	{
 		const ulen8 l = len();
-		XBOUNDS(inPosition, 0, l);												// Must start to grab within string
-		ASSERT((inNum==-1) || (inPosition+inNum<=l));			// Can't grab beyond end of string
+		ASSERT(l.clen().in_range(inPosition));								// Must start to grab within string
+		ASSERT((inNum.is_empty()) || (inPosition+inNum<=l.clen()));			// Can't grab beyond end of string
 
-		inPosition = x_intu::min((s32)inPosition, l);
-		inNum = (inNum==-1) ? (l-inPosition) : (x_intu::min(inNum, l-(s32)inPosition));
-		const ustr8* buffer = c_str();
+		inPosition = x_intu::min((s32)inPosition, (s32)(u32)l.clen());
+		inNum = (inNum==-1) ? (l-ulen8(inPosition)).clen() : (x_intu::min(inNum, (s32)(u32)((l-ulen8(inPosition)).clen())));
+
+		const ustr8* buffer =cbegin().str();
 		outMid.copy(buffer+inPosition, inNum);
 	}
 
 	// xstring version
 
 
-	void				xstring_const_base::substring(u32 inPosition, xstring& outSubstring, s32 inNum) const
+	void				xstring_const_base::substring(ucpos8 inPosition, xstring& outSubstring, uclen8 inNum) const
 	{
 		mid(inPosition, outSubstring, inNum);
 	}
@@ -498,14 +807,14 @@ namespace xcore
 	//------------------------------------------------------------------------------
 
 
-	void				xstring_const_base::substring(u32 inPosition, xstring& outSubstring) const
+	void				xstring_const_base::substring(ucpos8 inPosition, xstring& outSubstring) const
 	{
-		mid(inPosition, outSubstring, len()-inPosition);
+		mid(inPosition, outSubstring, (len()-ulen8(inPosition)).clen());
 	}
 
 
  
-	xstring				xstring_const_base::substr(u32 inPosition, s32 inNum) const
+	xstring				xstring_const_base::substr(ucpos8 inPosition, uclen8 inNum) const
 	{
 		 return mid( inPosition, inNum);
 	}
@@ -513,11 +822,11 @@ namespace xcore
 	//------------------------------------------------------------------------------
 
 
-	bool				xstring_const_base::splitOn(const char inChar, xstring& outLeft, xstring& outRight) const
+	bool				xstring_const_base::splitOn(uchar8 inChar, xstring& outLeft, xstring& outRight) const
 	{
 		// Find the split character
 		upos8 split_pos = find(inChar);
-		if (split_pos == -1) 
+		if (split_pos.is_empty()) 
 			return xFALSE;
 
 		// Split string
@@ -528,7 +837,7 @@ namespace xcore
 	//------------------------------------------------------------------------------
 
 
-	bool				xstring_const_base::rsplitOn(const char inChar, xstring& outLeft, xstring& outRight) const
+	bool				xstring_const_base::rsplitOn(uchar8 inChar, xstring& outLeft, xstring& outRight) const
 	{
 		// Find the split character
 		upos8 split_pos = rfind(inChar);
@@ -543,7 +852,7 @@ namespace xcore
 	//------------------------------------------------------------------------------
 
 
-	void				xstring_const_base::split(u32 inPosition, bool inRemove, xstring& outLeft, xstring& outRight) const
+	void				xstring_const_base::split(ucpos8 inPosition, bool inRemove, xstring& outLeft, xstring& outRight) const
 	{
 		XBOUNDS(inPosition, 0, len());
 		XBOUNDS(inPosition + ((int)inRemove), 0, len());
@@ -555,7 +864,7 @@ namespace xcore
 	// xcstring version
 
 
-	void				xstring_const_base::substring(u32 inPosition, xcstring& outSubstring, s32 inNum) const
+	void				xstring_const_base::substring(ucpos8 inPosition, xcstring& outSubstring, uclen8 inNum) const
 	{
 		mid(inPosition, outSubstring, inNum);
 	}
@@ -563,7 +872,7 @@ namespace xcore
 	//------------------------------------------------------------------------------
 
 
-	void				xstring_const_base::substring(u32 inPosition, xcstring& outSubstring) const
+	void				xstring_const_base::substring(ucpos8 inPosition, xcstring& outSubstring) const
 	{
 		mid(inPosition, outSubstring, len()-inPosition);
 	}
@@ -572,7 +881,7 @@ namespace xcore
 	//------------------------------------------------------------------------------
 
 
-	bool				xstring_const_base::splitOn(const char inChar, xcstring& outLeft, xcstring& outRight) const
+	bool				xstring_const_base::splitOn(uchar8 inChar, xcstring& outLeft, xcstring& outRight) const
 	{
 		// Find the split character
 		upos8 split_pos = find(inChar);
@@ -587,7 +896,7 @@ namespace xcore
 	//------------------------------------------------------------------------------
 
 
-	bool				xstring_const_base::rsplitOn(const char inChar, xcstring& outLeft, xcstring& outRight) const
+	bool				xstring_const_base::rsplitOn(uchar8 inChar, xcstring& outLeft, xcstring& outRight) const
 	{
 		// Find the split character
 		upos8 split_pos = rfind(inChar);
@@ -601,84 +910,42 @@ namespace xcore
 
 	//------------------------------------------------------------------------------
 
-
-	void				xstring_const_base::split(u32 inPosition, bool inRemove, xcstring& outLeft, xcstring& outRight) const
+	void				xstring_const_base::split(ucpos8 inPosition, bool inRemove, xcstring& outLeft, xcstring& outRight) const
 	{
 		XBOUNDS(inPosition, 0, len());
 		XBOUNDS(inPosition + ((int)inRemove), 0, len());
 
 		left(inPosition, outLeft);
-		mid(inPosition + ((int)inRemove), outRight);
+		mid(inPosition + (inRemove ? 1 : 0), outRight);
 	}
 
+	//------------------------------------------------------------------------------
 
-	/**
-	 * xstring_mutable_base 
-	 */
-
-
-	xstring_mutable_base::xstring_mutable_base(void)
-	:__const_base()
+	ucptr8				xstring_const_base::cbegin() const
 	{
+		return mBuffer->getCPtr(); 
 	}
 
+	//------------------------------------------------------------------------------
 
-	xstring_mutable_base::xstring_mutable_base(u32 length)
-	:__const_base(length)
+	ucptr8				xstring_const_base::cend() const
 	{
+		return mBuffer->getCPtr() + mBuffer->getLength(); 
 	}
 
-
-	xstring_mutable_base::xstring_mutable_base(const char* str)
-	:__const_base(str)
-	{
-	}
-
-
-	xstring_mutable_base::xstring_mutable_base(u32 len, const char* str)
-	:__const_base(len, str)
-	{
-	}
-
-
-	xstring_mutable_base::xstring_mutable_base(u32 lenA, const char* strA, u32 lenB, const char* strB)
-	:__const_base(lenA, strA, lenB, strB)
-	{
-	}
-
-
-	xstring_mutable_base::xstring_mutable_base(const char* formatString, const x_va_list& args)
-	:__const_base(formatString,args)
-	{
-	}
-
-
-	xstring_mutable_base::xstring_mutable_base(const char* formatString, const x_va& v1, const x_va& v2, const x_va& v3, const x_va& v4, const x_va& v5, const x_va& v6, const x_va& v7, const x_va& v8, const x_va& v9, const x_va& v10)
-	:__const_base(formatString,v1,v2,v3,v4,v5,v6,v7,v8,v9,v10)
-	{
-	}
-
-
-	xstring_mutable_base::xstring_mutable_base(const xstring& str)
-	:__const_base(str.len(), str.c_str())
-	{
-	}
-
-
-	xstring_mutable_base::xstring_mutable_base(const xccstring& str)
-	:__const_base(str.len(), str.c_str())
-	{
-	}
-
-
-	xstring_mutable_base::xstring_mutable_base(const xcstring& str)
-	:__const_base(str.len(), str.c_str())
-	{
-	}
 
 
 	// ---------------------------------------------------------------------------------------------------------------------------
+	// ---------------------------------------------------------------------------------------------------------------------------
+	// xstring_mutable_base 
+	// ---------------------------------------------------------------------------------------------------------------------------
+	// ---------------------------------------------------------------------------------------------------------------------------
 
+	// ---------------------------------------------------------------------------------------------------------------------------
+	s32				xstring_mutable_base::max(void) const
+	{
+		return mBuffer->getReserved(); 
+	}
 
 	void			xstring_mutable_base::clear(void)
 	{
@@ -1537,6 +1804,21 @@ namespace xcore
 		}
 	}
 
+	//------------------------------------------------------------------------------
+
+	uptr8				xstring_mutable_base::begin()
+	{
+		return mBuffer->getPtr(); 
+	}
+
+
+	//------------------------------------------------------------------------------
+
+	uptr8				xstring_mutable_base::end()
+	{
+		return mBuffer->getPtr() + mBuffer->getLength(); 
+	}
+
 
 	//------------------------------------------------------------------------------
 
@@ -2111,243 +2393,50 @@ namespace xcore
 	}
 
 
-
-
-
 	//------------------------------------------------------------------------------
 
-	xstring_tmp::xstring_tmp(s32 maxLength)
-		: __base(maxLength)
+	uptr8				xstring::begin()
 	{
-	}
-
-	//------------------------------------------------------------------------------
-
-	xstring_tmp::xstring_tmp(const char* str)
-		: __base(str)
-	{
-	}
-
-	//------------------------------------------------------------------------------
-
-	xstring_tmp::xstring_tmp(const char* str, s32 strLen)
-		: __base(strLen, str)
-	{
-	}
-
-	//------------------------------------------------------------------------------
-
-	xstring_tmp::xstring_tmp(const char* strA, s32 strLenA, const char* strB, s32 strLenB)
-		: __base(strLenA, strA, strLenB, strB)
-	{
-	}
-
-	//------------------------------------------------------------------------------
-
-	xstring_tmp::xstring_tmp(const char* formatString, const x_va& v1, const x_va& v2, const x_va& v3, const x_va& v4, const x_va& v5, const x_va& v6, const x_va& v7, const x_va& v8, const x_va& v9, const x_va& v10)
-		: __base(formatString,v1,v2,v3,v4,v5,v6,v7,v8,v9,v10)
-	{
-	}
-
-	//------------------------------------------------------------------------------
-
-	xstring_tmp::xstring_tmp(const char* formatString, const x_va_list& args)
-		: __base(formatString,args)
-	{
-	}
-
-	//------------------------------------------------------------------------------
-	xstring_tmp::xstring_tmp(const xstring& other)
-		: __base(other.len(), other.c_str())
-	{
-	}
-
-	//------------------------------------------------------------------------------
-	xstring_tmp::xstring_tmp(const xcstring& other)
-		: __base(other.len(), other.c_str())
-	{
-	}
-
-	//------------------------------------------------------------------------------
-	xstring_tmp::xstring_tmp(const xccstring& other)
-		: __base(other.len(), other.c_str())
-	{
-	}
-
-	//------------------------------------------------------------------------------
-	xstring_tmp::xstring_tmp(const xstring_tmp& other)
-		: __base(other.len(), other.c_str())
-	{
-	}
-
-	//------------------------------------------------------------------------------
-
-	char				xstring_tmp::operator[] (s32 inIndex) const
-	{
-		ASSERT(inIndex<len());
-		return mBuffer.getPtr()[inIndex];
-	}
-
-	//------------------------------------------------------------------------------
-
-	char&				xstring_tmp::operator[]	(s32 inIndex)
-	{
-		ASSERT(inIndex<len());
-		return mBuffer.getPtr()[inIndex];
+		return mBuffer->getPtr(); 
 	}
 
 
 	//------------------------------------------------------------------------------
 
-	xstring_tmp&		xstring_tmp::operator=(const xstring& inRHS)
+	uptr8				xstring::end()
 	{
-		mBuffer.setLength(0);
-		*this += inRHS;
-		return *this;
+		return mBuffer->getPtr() + mBuffer->getLength(); 
 	}
+
 
 	//------------------------------------------------------------------------------
 
-	xstring_tmp&		xstring_tmp::operator=(const xcstring& inRHS)
+	ucptr8				xstring::begin() const
 	{
-		mBuffer.setLength(0);
-		*this += inRHS;
-		return *this;
+		return mBuffer->getCPtr(); 
 	}
+
 
 	//------------------------------------------------------------------------------
 
-	xstring_tmp&		xstring_tmp::operator=(const xccstring& inRHS)
+	ucptr8				xstring::end() const
 	{
-		mBuffer.setLength(0);
-		*this += inRHS;
-		return *this;
+		return mBuffer->getCPtr() + mBuffer->getLength(); 
 	}
+
 
 	//------------------------------------------------------------------------------
 
-	xstring_tmp&		xstring_tmp::operator=(const xstring_tmp& inRHS)
+	void				xstring::terminateWithZero(void)
 	{
-		mBuffer.setLength(0);
-		*this += inRHS;
-		return *this;
+		mBuffer->terminateWithZero(); 
 	}
+
+
 
 	//------------------------------------------------------------------------------
-
-	xstring_tmp&		xstring_tmp::operator=(char inRHS)
-	{
-		mBuffer.setLength(0);
-		mBuffer.getPtr()[0] = inRHS;
-		mBuffer.setLength(1);
-		terminateWithZero();
-		return *this;
-	}
-
 	//------------------------------------------------------------------------------
-
-	xstring_tmp&		xstring_tmp::operator=(const char* inRHS)
-	{
-		mBuffer.setLength(0);
-		s32 l = 0;
-		while (l<mBuffer.getMaxLength() && *inRHS!='\0')
-		{
-			mBuffer.getPtr()[l] = *inRHS++;
-			++l;
-		}
-		mBuffer.setLength(l);
-		terminateWithZero();
-		return *this;
-	}
-
 	//------------------------------------------------------------------------------
-
-	xstring_tmp&		xstring_tmp::operator+=(char inRHS)
-	{
-		char str[3];
-		str[0] = inRHS;
-		str[1] = '\0';
-		str[2] = '\0';
-		*this += str;
-		return *this;
-	}
-
-	//------------------------------------------------------------------------------
-
-	xstring_tmp&		xstring_tmp::operator+=(const char* inRHS)
-	{
-		s32 l = len(); 
-		while (l<mBuffer.getMaxLength() && *inRHS!='\0')
-		{
-			mBuffer.getPtr()[l] = *inRHS++;
-			++l;
-		}
-		mBuffer.setLength(l);
-		terminateWithZero();
-		return *this;
-	}
-
-	//------------------------------------------------------------------------------
-
-	xstring_tmp&		xstring_tmp::operator+=(const xstring& inRHS)
-	{
-		s32 l = len(); 
-		while (l<mBuffer.getMaxLength() && l<inRHS.len())
-		{
-			mBuffer.getPtr()[l] = inRHS[l];
-			++l;
-		}
-		mBuffer.setLength(l);
-		terminateWithZero();
-		return *this;
-	}
-
-	//------------------------------------------------------------------------------
-
-	xstring_tmp&		xstring_tmp::operator+=(const xstring_tmp& inRHS)
-	{
-		s32 l = len(); 
-		while (l<mBuffer.getMaxLength() && l<inRHS.len())
-		{
-			mBuffer.getPtr()[l] = inRHS[l];
-			++l;
-		}
-		mBuffer.setLength(l);
-		terminateWithZero();
-		return *this;
-	}
-
-	//------------------------------------------------------------------------------
-
-	xstring_tmp&		xstring_tmp::operator+=(const xcstring& inRHS)
-	{
-		s32 l = len(); 
-		while (l<mBuffer.getMaxLength() && l<inRHS.len())
-		{
-			mBuffer.getPtr()[l] = inRHS[l];
-			++l;
-		}
-		mBuffer.setLength(l);
-		terminateWithZero();
-		return *this;
-	}
-
-	//------------------------------------------------------------------------------
-
-	xstring_tmp&		xstring_tmp::operator+=(const xccstring& inRHS)
-	{
-		s32 l = len(); 
-		while (l<mBuffer.getMaxLength() && l<inRHS.len())
-		{
-			mBuffer.getPtr()[l] = inRHS[l];
-			++l;
-		}
-		mBuffer.setLength(l);
-		terminateWithZero();
-		return *this;
-	}
-
-
 	//------------------------------------------------------------------------------
 
 	s32 xcstring::format(const char* format, const x_va& v1, const x_va& v2, const x_va& v3, const x_va& v4, const x_va& v5, const x_va& v6, const x_va& v7, const x_va& v8, const x_va& v9, const x_va& v10)
