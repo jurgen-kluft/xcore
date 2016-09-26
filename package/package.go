@@ -1,9 +1,9 @@
 package xcore
 
 import (
+	"github.com/jurgen-kluft/xbase/package"
 	"github.com/jurgen-kluft/xcode/denv"
 	"github.com/jurgen-kluft/xentry/package"
-	"github.com/jurgen-kluft/xbase/package"
 	"github.com/jurgen-kluft/xunittest/package"
 )
 
@@ -22,7 +22,6 @@ func GetPackage() *denv.Package {
 
 	// 'xcore' library
 	mainlib := denv.SetupDefaultCppLibProject("xcore", "github.com\\jurgen-kluft\\xcore")
-	mainlib.Dependencies = append(mainlib.Dependencies, unittestpkg.GetMainLib())
 	mainlib.Dependencies = append(mainlib.Dependencies, xbasepkg.GetMainLib())
 
 	// 'xcore' unittest project
@@ -36,4 +35,3 @@ func GetPackage() *denv.Package {
 	mainpkg.AddUnittest(maintest)
 	return mainpkg
 }
-

@@ -3,6 +3,7 @@
 vendor/
 
 #except the following files
+!*.go
 !*.cpp
 !*.hpp
 !*.c
