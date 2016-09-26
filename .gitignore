@@ -1,39 +1,32 @@
-# Visual Studio project files
-*.sln
-*.vcxproj
-*.vcxproj.filters
+#ignore all files
+*.*
+vendor/
 
-# Compiled Object files
-*.slo
-*.lo
-*.o
-*.obj
+#except the following files
+!*.cpp
+!*.hpp
+!*.c
+!*.h
+!*.inl
 
-# Precompiled Headers
-*.gch
-*.pch
+!*.sln
+!*.vcproj
+!*.vcxproj
 
-# Compiled Dynamic libraries
-*.so
-*.dylib
-*.dll
+!*.pl
 
-# Fortran module files
-*.mod
+!*.cs
+!*.csproj
+!*.resx
 
-# Compiled Static libraries
-*.lai
-*.la
-*.a
-*.lib
+!*.hlsl
+!*.fragment
 
-# Executables
-*.exe
-*.out
-*.app
+!*.mold
+!*.sc
+!*.diagram
 
-# CTags
-tags
+!*.ini
+!*.bat
 
-# XCode
-target\
+#except the following folders
