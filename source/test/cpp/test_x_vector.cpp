@@ -1,5 +1,4 @@
 #include "xcore\x_vector.h"
-#include "xcore\x_string.h"
 
 #include "xunittest\xunittest.h"
 

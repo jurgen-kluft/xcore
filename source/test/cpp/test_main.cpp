@@ -14,12 +14,8 @@ UNITTEST_SUITE_DECLARE(xCoreUnitTest, xqueue);
 UNITTEST_SUITE_DECLARE(xCoreUnitTest, xmap);
 UNITTEST_SUITE_DECLARE(xCoreUnitTest, xpqueue);
 UNITTEST_SUITE_DECLARE(xCoreUnitTest, xstack);
-UNITTEST_SUITE_DECLARE(xCoreUnitTest, xcstring);
-UNITTEST_SUITE_DECLARE(xCoreUnitTest, xccstring);
 UNITTEST_SUITE_DECLARE(xCoreUnitTest, xilist);
 UNITTEST_SUITE_DECLARE(xCoreUnitTest, xset);
-UNITTEST_SUITE_DECLARE(xCoreUnitTest, xstring);
-UNITTEST_SUITE_DECLARE(xCoreUnitTest, xstring_tmp);
 //UNITTEST_SUITE_DECLARE(xCoreUnitTest, xtriemap);
 UNITTEST_SUITE_DECLARE(xCoreUnitTest, xvector);
 

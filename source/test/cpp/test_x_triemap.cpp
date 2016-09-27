@@ -853,7 +853,6 @@ UNITTEST_SUITE_END
 #include "xbase\x_allocator.h"
 #include "xbase\x_debug.h"
 #include "xbase\x_integer.h"
-#include "xcore\x_string.h"
 
 #include "xunittest\xunittest.h"
 
