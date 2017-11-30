@@ -1,7 +1,7 @@
-#include "xbase\x_allocator.h"
-#include "xbase\x_integer.h"
-#include "xbase\private\x_std.h"
-#include "xcore\x_memblock.h"
+#include "xbase/x_allocator.h"
+#include "xbase/x_integer.h"
+#include "xbase/private/x_std.h"
+#include "xcore/x_memblock.h"
 
 namespace xcore
 {

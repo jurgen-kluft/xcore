@@ -1,8 +1,8 @@
-#include "xbase\x_base.h"
-#include "xbase\x_allocator.h"
-#include "xbase\x_console.h"
+#include "xbase/x_base.h"
+#include "xbase/x_allocator.h"
+#include "xbase/x_console.h"
 
-#include "xcore\x_core.h"
+#include "xcore/x_core.h"
 
 #include "xunittest\xunittest.h"
 
@@ -16,7 +16,7 @@ UNITTEST_SUITE_DECLARE(xCoreUnitTest, xpqueue);
 UNITTEST_SUITE_DECLARE(xCoreUnitTest, xstack);
 UNITTEST_SUITE_DECLARE(xCoreUnitTest, xilist);
 UNITTEST_SUITE_DECLARE(xCoreUnitTest, xset);
-//UNITTEST_SUITE_DECLARE(xCoreUnitTest, xtriemap);
+UNITTEST_SUITE_DECLARE(xCoreUnitTest, xtree);
 UNITTEST_SUITE_DECLARE(xCoreUnitTest, xvector);
 
 namespace xcore
@@ -72,12 +72,12 @@ bool gRunUnitTest(UnitTest::TestReporter& reporter)
 {
 	xbase::x_Init();
 
-	xcore::UnitTestAllocator unittestAllocator( xcore::x_iallocator::default() );
+	xcore::UnitTestAllocator unittestAllocator( xcore::x_iallocator::get_default() );
 	UnitTest::SetAllocator(&unittestAllocator);
 
-	xcore::xconsole::addDefault();
+	xcore::xconsole::add_default_console();
 
-	xcore::TestAllocator testAllocator(xcore::x_iallocator::default());
+	xcore::TestAllocator testAllocator(xcore::x_iallocator::get_default());
 	gTestAllocator = &testAllocator;
 
 	xcore::x_Init(gTestAllocator);

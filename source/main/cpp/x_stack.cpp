@@ -1,4 +1,4 @@
-#include "xcore\x_stack.h"
+#include "xcore/x_stack.h"
 
 namespace xcore
 {

@@ -1,15 +1,16 @@
 // x_map.h - xCore map
 #ifndef __XBASE_MAP_H__
 #define __XBASE_MAP_H__
-#include "xbase\x_target.h"
+#include "xbase/x_target.h"
 #ifdef USE_PRAGMA_ONCE 
 #pragma once 
 #endif
 
-#include "xbase\x_debug.h"
-#include "xbase\x_allocator.h"
-#include "xbase\x_tree.h"
-#include "xbase\private\x_std.h"
+#include "xbase/x_debug.h"
+#include "xbase/x_allocator.h"
+#include "xbase/private/x_std.h"
+
+#include "xcore/x_tree.h"
 
 namespace xcore
 {
@@ -90,11 +91,12 @@ namespace xcore
 	private:
 		P				mStrategy;
 		xmapnode		mRoot;
+		xmapnode		mNill;
 		u32				mCount;
 	};
 };
 
-#include "xcore\private\x_map_inline.h"
+#include "xcore/private/x_map_inline.h"
 
 
 #endif	///< __XBASE_MAP_H__

@@ -243,6 +243,11 @@ namespace xcore
 		: mCount(0)
 		, mStrategy(_strategy)
 	{
+		mNill.clear();
+		mRoot.clear();
+		mRoot.set_parent(&mNill);
+		mRoot.set_left(&mNill);
+		mRoot.set_right(&mNill);
 	}
 
 	template <typename T, typename C, typename P>
@@ -270,8 +275,8 @@ namespace xcore
 		//	Rotate away the left links so that
 		//	we can treat this like the destruction
 		//	of a linked list
-		xsetnode* nill = &mRoot;
-		xsetnode* root = nill;
+		xsetnode* nill = &mNill;
+		xsetnode* root = &mRoot;
 		xsetnode* it = (xsetnode*)root->get_child(xsetnode::LEFT);
 		while ( it != nill ) 
 		{
@@ -305,6 +310,7 @@ namespace xcore
 	inline xset_iterator<T,P>			xset<T,C,P>::insert(T const& item)
 	{
 		xsetnode* root     = &mRoot;
+		xsetnode* nill     = &mNill;
 		xsetnode* endNode  = root;
 		xsetnode* lastNode = root;
 		xsetnode* curNode  = (xsetnode*)root->get_child(xsetnode::LEFT);;
@@ -325,11 +331,11 @@ namespace xcore
 		xsetnode* node = mStrategy.allocNode(item);
 
 		rb_attach_to(node, lastNode, s);
-		rb_insert_fixup(*root, node);
+		rb_insert_fixup(nill, *root, node);
 		++mCount;
 
 #ifdef DEBUG_RBTREE
-		rb_check(root);
+		rb_validate(root, nill);
 #endif
 		return xset_iterator<T,P>(mStrategy, node);
 	}
@@ -349,8 +355,8 @@ namespace xcore
 	template <typename T, typename C, typename P>
 	inline xbool			xset<T,C,P>::remove(T const& item)
 	{
+		xsetnode* nill = &mNill;
 		xsetnode* root = &mRoot;
-		xsetnode* nill = root;
 		xsetnode* it   = (xsetnode*)root->get_child(xsetnode::LEFT);
 		C comparer;
 		while ( it != nill )
@@ -396,13 +402,13 @@ namespace xcore
 		ASSERT(endNode->is_black());
 
 		if (!red) 
-			rb_erase_fixup(root, replChild);
+			rb_erase_fixup(nill, root, replChild);
 
 		--mCount;
 		mStrategy.deallocNode(node);
 
 #ifdef DEBUG_RBTREE
-		rb_check(root);
+		rb_validate(root, nill);
 #endif
 		return xTrue;
 	}

@@ -1,5 +1,5 @@
 // x_islist.h - xCore intrusive singly linked list requiring inheritance
-#include "xcore\x_islist.h"
+#include "xcore/x_islist.h"
 
 namespace xcore
 {

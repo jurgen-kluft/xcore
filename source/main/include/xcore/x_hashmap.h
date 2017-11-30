@@ -1,13 +1,13 @@
 // x_hashmap.h - xbase hashmap, a map / trie hybrid
 #ifndef __XBASE_HASHMAP_H__
 #define __XBASE_HASHMAP_H__
-#include "xbase\x_target.h"
+#include "xbase/x_target.h"
 #ifdef USE_PRAGMA_ONCE 
 #pragma once 
 #endif
 
-#include "xbase\x_debug.h"
-#include "xbase\x_allocator.h"
+#include "xbase/x_debug.h"
+#include "xbase/x_allocator.h"
 
 #if 0
 
@@ -61,7 +61,7 @@ namespace xcore
 	};
 };
 
-#include "xbase\private\x_hashmap_inline.h"
+#include "xbase/private/x_hashmap_inline.h"
 
 #endif
 

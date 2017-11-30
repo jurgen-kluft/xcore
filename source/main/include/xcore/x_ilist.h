@@ -1,7 +1,7 @@
 // x_ilist.h - xCore intrusive doubly linked list requiring inheritance
 #ifndef __XBASE_ILIST_H__
 #define __XBASE_ILIST_H__
-#include "xbase\x_target.h"
+#include "xbase/x_target.h"
 #ifdef USE_PRAGMA_ONCE 
 #pragma once 
 #endif
@@ -9,8 +9,8 @@
 //==============================================================================
 // INCLUDES
 //==============================================================================
-#include "xbase\x_debug.h"
-#include "xcore\x_list.h"
+#include "xbase/x_debug.h"
+#include "xcore/x_list.h"
 
 //==============================================================================
 // xCore namespace

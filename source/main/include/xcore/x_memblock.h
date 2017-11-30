@@ -1,11 +1,11 @@
 #ifndef __XBASE_MEMBLOCK_H__
 #define __XBASE_MEMBLOCK_H__
-#include "xbase\x_target.h"
+#include "xbase/x_target.h"
 #ifdef USE_PRAGMA_ONCE 
 #pragma once 
 #endif
 
-#include "xcore\x_memlink.h"
+#include "xcore/x_memlink.h"
 
 namespace xcore
 {

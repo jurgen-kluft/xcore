@@ -1,6 +1,6 @@
-#include "xcore\x_cmemlink.h"
-#include "xbase\x_memory_std.h"
-#include "xbase\private\x_std.h"
+#include "xcore/x_cmemlink.h"
+#include "xbase/x_memory_std.h"
+#include "xbase/private/x_std.h"
 
 namespace xcore
 {

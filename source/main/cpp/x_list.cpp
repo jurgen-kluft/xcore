@@ -1,4 +1,4 @@
-#include "xcore\x_list.h"
+#include "xcore/x_list.h"
 
 namespace xcore
 {

@@ -1,7 +1,7 @@
 // x_stack.h - xCore stack
 #ifndef __XBASE_STACK_H__
 #define __XBASE_STACK_H__
-#include "xbase\x_target.h"
+#include "xbase/x_target.h"
 #ifdef USE_PRAGMA_ONCE 
 #pragma once 
 #endif
@@ -9,8 +9,8 @@
 //==============================================================================
 // INCLUDES
 //==============================================================================
-#include "xbase\x_debug.h"
-#include "xcore\x_slist.h"
+#include "xbase/x_debug.h"
+#include "xcore/x_slist.h"
 
 //==============================================================================
 // xCore namespace
@@ -65,7 +65,7 @@ namespace xcore
 	//==============================================================================
 };
 
-#include "xcore\private\x_stack_inline.h"
+#include "xcore/private/x_stack_inline.h"
 
 //==============================================================================
 // END

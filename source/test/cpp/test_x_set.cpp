@@ -1,5 +1,5 @@
-#include "xcore\x_set.h"
-#include "xbase\x_allocator.h"
+#include "xcore/x_set.h"
+#include "xbase/x_allocator.h"
 
 #include "xunittest\xunittest.h"
 

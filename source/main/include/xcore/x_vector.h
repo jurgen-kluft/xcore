@@ -1,13 +1,13 @@
 #ifndef __XBASE_XVECTOR_H__
 #define __XBASE_XVECTOR_H__
-#include "xbase\x_target.h"
+#include "xbase/x_target.h"
 #ifdef USE_PRAGMA_ONCE 
 #pragma once 
 #endif
 
-#include "xbase\x_qsort.h"
-#include "xcore\x_memblock.h"
-#include "xbase\private\x_std.h"
+#include "xbase/x_qsort.h"
+#include "xcore/x_memblock.h"
+#include "xbase/private/x_std.h"
 
 namespace xcore
 {
@@ -135,6 +135,6 @@ namespace xcore
 
 }
 
-#include "xcore\private\x_vector_inline.h"
+#include "xcore/private/x_vector_inline.h"
 
 #endif	///< __XBASE_XVECTOR_H__

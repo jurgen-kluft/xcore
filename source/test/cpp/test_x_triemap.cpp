@@ -15,12 +15,12 @@
 #include <cell/perf/performance.h>
 #endif
 
-#include "xbase\x_target.h"
-#include "xbase\x_allocator.h"
-#include "xbase\x_debug.h"
-#include "xbase\x_integer.h"
-#include "xbase\x_string.h"
-#include "xbase\x_memory_std.h"
+#include "xbase/x_target.h"
+#include "xbase/x_allocator.h"
+#include "xbase/x_debug.h"
+#include "xbase/x_integer.h"
+#include "xbase/x_string.h"
+#include "xbase/x_memory_std.h"
 
 #include "xunittest\xunittest.h"
 
@@ -849,10 +849,10 @@ UNITTEST_SUITE_END
 
 #else
 
-#include "xbase\x_target.h"
-#include "xbase\x_allocator.h"
-#include "xbase\x_debug.h"
-#include "xbase\x_integer.h"
+#include "xbase/x_target.h"
+#include "xbase/x_allocator.h"
+#include "xbase/x_debug.h"
+#include "xbase/x_integer.h"
 
 #include "xunittest\xunittest.h"
 

@@ -1,7 +1,7 @@
 // x_slist.h - xCore singly linked list
 #ifndef __XBASE_SLIST_H__
 #define __XBASE_SLIST_H__
-#include "xbase\x_target.h"
+#include "xbase/x_target.h"
 #ifdef USE_PRAGMA_ONCE 
 #pragma once 
 #endif
@@ -9,8 +9,8 @@
 //==============================================================================
 // INCLUDES
 //==============================================================================
-#include "xbase\x_debug.h"
-#include "xbase\x_allocator.h"
+#include "xbase/x_debug.h"
+#include "xbase/x_allocator.h"
 
 //==============================================================================
 // xCore namespace
@@ -117,7 +117,7 @@ namespace xcore
 	//==============================================================================
 };
 
-#include "xcore\private\x_slist_inline.h"
+#include "xcore/private/x_slist_inline.h"
 
 //==============================================================================
 // END

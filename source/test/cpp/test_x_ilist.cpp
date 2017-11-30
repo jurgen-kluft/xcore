@@ -1,5 +1,5 @@
-#include "xcore\x_ilist.h"
-#include "xbase\x_idx_allocator.h"
+#include "xcore/x_ilist.h"
+#include "xbase/x_idx_allocator.h"
 
 #include "xunittest\xunittest.h"
 

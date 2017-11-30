@@ -305,6 +305,10 @@ namespace xcore
 		, mStrategy(_policy)
 	{
 		mRoot.clear();
+		mNill.clear();
+		mRoot.set_parent(&mNill);
+		mRoot.set_left(&mNill);
+		mRoot.set_right(&mNill);
 	}
 
 	template <typename K, typename V, typename C, typename P>
@@ -313,6 +317,11 @@ namespace xcore
 		, mStrategy(m.mStrategy)
 	{
 		mRoot.clear();
+		mNill.clear();
+		mRoot.set_parent(&mNill);
+		mRoot.set_left(&mNill);
+		mRoot.set_right(&mNill);
+
 		for (const_iterator i = m.begin(); i != m.end(); ++i)
 			insert(i.key(), i.value() );
 	}
@@ -341,8 +350,9 @@ namespace xcore
 		//	Rotate away the left links so that
 		//	we can treat this like the destruction
 		//	of a linked list
-		xmapnode* nill = &mRoot;
-		xmapnode* root = nill;
+		xmapnode* nill = &mNill;
+		xmapnode* root = &mRoot;
+
 		xmapnode* it = (xmapnode*)root->get_child(xmapnode::LEFT);
 		while ( it != nill ) 
 		{
@@ -369,20 +379,22 @@ namespace xcore
 		}
 
 		root->set_parent(nill);
-		root->set_child(nill, xmapnode::LEFT);
+		root->set_left(nill);
+		root->set_right(nill);
 	}
 
 
 	template <typename K, typename V, typename C, typename P>
 	inline xbool xmap<K,V,C,P>::insert(K const& key, V const& value)
 	{
+		xmapnode* nill     = &mNill;
 		xmapnode* root     = &mRoot;
-		xmapnode* endNode  = root;
+
 		xmapnode* lastNode = root;
 		xmapnode* curNode  = (xmapnode*)root->get_child(xmapnode::LEFT);
 		s32 s = xmapnode::LEFT;
 		C comparer;
-		while (curNode != endNode)
+		while (curNode != nill)
 		{
 			lastNode = curNode;
 
@@ -397,11 +409,11 @@ namespace xcore
 		xmapnode* node = mStrategy.allocNode(key, value);
 
 		rb_attach_to(node, lastNode, s);
-		rb_insert_fixup(*root, node);
+		rb_insert_fixup(nill, *root, node);
 		++mCount;
 
 #ifdef DEBUG_RBTREE
-		rb_check(root);
+		rb_test(root, nill);
 #endif
 		return xTRUE;
 	}
@@ -409,8 +421,9 @@ namespace xcore
 	template <typename K, typename V, typename C, typename P>
 	inline xbool xmap<K,V,C,P>::remove(K const& key)
 	{
+		xmapnode* nill = &mNill;
 		xmapnode* root = &mRoot;
-		xmapnode* nill = root;
+
 		xmapnode* it   = (xmapnode*)root->get_child(xmapnode::LEFT);
 		C comparer;
 		while ( it != nill )
@@ -431,39 +444,38 @@ namespace xcore
 		xmapnode* node = it;
 		ASSERT(node != root);
 
-		xmapnode* endNode = root;
 		xmapnode* repl = node;
 		s32 s = xmapnode::LEFT;
-		if (node->get_child(xmapnode::RIGHT) != endNode)
+		if (node->get_child(xmapnode::RIGHT) != nill)
 		{
-			if (node->get_child(xmapnode::LEFT) != endNode)
+			if (node->get_child(xmapnode::LEFT) != nill)
 			{
 				repl = (xmapnode*)node->get_child(xmapnode::RIGHT);
-				while (repl->get_child(xmapnode::LEFT) != endNode)
+				while (repl->get_child(xmapnode::LEFT) != nill)
 					repl = (xmapnode*)repl->get_child(xmapnode::LEFT);
 			}
 			s = xmapnode::RIGHT;
 		}
-		ASSERT(repl->get_child(1-s) == endNode);
+		ASSERT(repl->get_child(1-s) == nill);
 		bool red = repl->is_red();
 		xmapnode* replChild = (xmapnode*)repl->get_child(s);
 
 		rb_substitute_with(repl, replChild);
-		ASSERT(endNode->is_black());
+		ASSERT(nill->is_black());
 
 		if (repl != node)
 			rb_switch_with(repl, node);
 
-		ASSERT(endNode->is_black());
+		ASSERT(nill->is_black());
 
 		if (!red) 
-			rb_erase_fixup(root, replChild);
+			rb_erase_fixup(nill, root, replChild);
 
 		--mCount;
 		mStrategy.deallocNode(node);
 
 #ifdef DEBUG_RBTREE
-		rb_check(root);
+		rb_test(root, nill);
 #endif
 		return xTRUE;
 	}
@@ -489,8 +501,9 @@ namespace xcore
 	template <typename K, typename V, typename C, typename P>
 	inline xmap_iterator<K,V,P>	xmap<K,V,C,P>::find(K const& key)
 	{
+		xmapnode* nill = &mNill;
 		xmapnode* root = &mRoot;
-		xmapnode* nill = root;
+
 		xmapnode* it = (xmapnode*)root->get_child(xmapnode::LEFT);
 		C comparer;
 		while ( it != nill )
@@ -508,8 +521,8 @@ namespace xcore
 	template <typename K, typename V, typename C, typename P>
 	inline xmap_const_iterator<K,V,P>	xmap<K,V,C,P>::find(K const& key) const
 	{
+		xmapnode const* nill = &mNill;
 		xmapnode const* root = &mRoot;
-		xmapnode const* nill = root;
 		xmapnode const* it = (xmapnode const*)root->get_child(xmapnode::LEFT);
 		C comparer;
 		while ( it != nill )
@@ -528,8 +541,9 @@ namespace xcore
 	inline xmap_iterator<K,V,P>	xmap<K,V,C,P>::imin()
 	{
 		// Traverse to the far left
+		xmapnode* nill = &mNill;
 		xmapnode* root = &mRoot;
-		xmapnode* nill = root;
+
 		xmapnode* it = (xmapnode*)root->get_child(xmapnode::LEFT);
 		xmapnode* n;
 		do 
@@ -544,8 +558,8 @@ namespace xcore
 	inline xmap_iterator<K,V,P>	xmap<K,V,C,P>::imax()
 	{
 		// Traverse to the far right
+		xmapnode* nill = &mNill;
 		xmapnode* root = &mRoot;
-		xmapnode* nill = root;
 		xmapnode* it = (xmapnode*)root->get_child(xmapnode::LEFT);
 		xmapnode* n;
 		do 
@@ -559,8 +573,9 @@ namespace xcore
 	template <typename K, typename V, typename C, typename P>
 	inline xmap_const_iterator<K,V,P>	xmap<K,V,C,P>::imin() const
 	{
+		xmapnode const* nill = &mNill;
 		xmapnode const* root = &mRoot;
-		xmapnode const* nill = root;
+
 		xmapnode const* it = (xmapnode const*)root->get_child(xmapnode::LEFT);
 		xmapnode const* n;
 		do 
@@ -574,8 +589,8 @@ namespace xcore
 	template <typename K, typename V, typename C, typename P>
 	inline xmap_const_iterator<K,V,P>	xmap<K,V,C,P>::imax() const
 	{
+		xmapnode const* nill = &mNill;
 		xmapnode const* root = &mRoot;
-		xmapnode const* nill = root;
 		xmapnode const* it = (xmapnode const*)root->get_child(xmapnode::LEFT);
 		xmapnode* n;
 		do 
