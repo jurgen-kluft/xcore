@@ -91,7 +91,6 @@ namespace xcore
 	private:
 		P				mStrategy;
 		xmapnode		mRoot;
-		xmapnode		mNill;
 		u32				mCount;
 	};
 };

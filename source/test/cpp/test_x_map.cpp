@@ -234,6 +234,7 @@ UNITTEST_SUITE_BEGIN(xmap)
 				CHECK_EQUAL(fmin, it1.key());
 				++it1;
 			}
+		
 		}
 
 		UNITTEST_TEST(const_iteration_inorder)

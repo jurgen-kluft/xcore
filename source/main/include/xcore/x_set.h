@@ -90,7 +90,6 @@ namespace xcore
 		P				mStrategy;
 		u32				mCount;
 		xsetnode		mRoot;
-		xsetnode		mNill;
 	};
 };
 

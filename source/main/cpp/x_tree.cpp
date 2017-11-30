@@ -114,12 +114,7 @@ namespace xcore
 	void			xrbtree::init()
 	{
 		root = &nodes[0];
-		nill = &nodes[1];
-		nill->clear();
 		root->clear();
-		root->set_parent(nill);
-		root->set_left(nill);
-		root->set_right(nill);
 	}
 
 	bool			xrbtree::insert(xrbnode * node_to_insert, void* key, comparer cmpfunc)
@@ -144,10 +139,10 @@ namespace xcore
 		xrbnode* node = node_to_insert;
 
 		rb_attach_to(node, lastNode, s);
-		rb_insert_fixup(nill, *root, node);
+		rb_insert_fixup(root, *root, node);
 
 #ifdef DEBUG_RBTREE
-		rb_validate(root, nill);
+		rb_validate(root, root);
 #endif
 		return xTRUE;
 	}

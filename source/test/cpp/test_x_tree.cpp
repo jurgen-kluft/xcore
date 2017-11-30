@@ -114,19 +114,19 @@ UNITTEST_SUITE_BEGIN(xtree)
 				xrbnode* node_to_destroy = tree.clear(iterator);
 				if (i == 0)
 				{
-					CHECK_TRUE(node_to_destroy == &a);
+					CHECK_TRUE(node_to_destroy == &d);
 				}
 				else if (i == 1)
 				{
-					CHECK_TRUE(node_to_destroy == &b);
+					CHECK_TRUE(node_to_destroy == &c);
 				}
 				else if (i == 2)
 				{
-					CHECK_TRUE(node_to_destroy == &c);
+					CHECK_TRUE(node_to_destroy == &b);
 				}
 				else if (i == 3)
 				{
-					CHECK_TRUE(node_to_destroy == &d);
+					CHECK_TRUE(node_to_destroy == &a);
 				}
 				else if (i == 4)
 				{

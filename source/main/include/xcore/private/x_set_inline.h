@@ -150,7 +150,7 @@ namespace xcore
 	template <typename T>
 	void			xset_heap_strategy<T>::deallocNode(xsetnode* node)
 	{
-		xsetnode_heap* _node = (xsetnode_heap*)((u32)node - X_OFFSET_OF(xsetnode_heap, node));
+		xsetnode_heap* _node = (xsetnode_heap*)((uptr)node - X_OFFSET_OF(xsetnode_heap, node));
 		_node->~xsetnode_heap();
 		allocator->deallocate(_node);
 	}
@@ -158,14 +158,14 @@ namespace xcore
 	template <typename T>
 	T&				xset_heap_strategy<T>::toItem(xsetnode* node)
 	{
-		xsetnode_heap* _node = (xsetnode_heap*)((u32)node - X_OFFSET_OF(xsetnode_heap, node));
+		xsetnode_heap* _node = (xsetnode_heap*)((uptr)node - X_OFFSET_OF(xsetnode_heap, node));
 		return _node->item;
 	}
 
 	template <typename T>
 	T const&		xset_heap_strategy<T>::toItem(xsetnode const* node) const
 	{
-		xsetnode_heap const* _node = (xsetnode_heap const*)((u32)node - X_OFFSET_OF(xsetnode_heap, node));
+		xsetnode_heap const* _node = (xsetnode_heap const*)((uptr)node - X_OFFSET_OF(xsetnode_heap, node));
 		return _node->item;
 	}
 
@@ -181,7 +181,7 @@ namespace xcore
 	template <typename T>
 	xsetnode*		xset_member_strategy<T>::allocNode(T const& item)
 	{
-		xsetnode* node = (xsetnode*)((u32)(item) + item_to_node_offset);
+		xsetnode* node = (xsetnode*)((uptr)(item) + item_to_node_offset);
 		return node; 
 	}
 
@@ -243,11 +243,7 @@ namespace xcore
 		: mCount(0)
 		, mStrategy(_strategy)
 	{
-		mNill.clear();
 		mRoot.clear();
-		mRoot.set_parent(&mNill);
-		mRoot.set_left(&mNill);
-		mRoot.set_right(&mNill);
 	}
 
 	template <typename T, typename C, typename P>
@@ -275,7 +271,7 @@ namespace xcore
 		//	Rotate away the left links so that
 		//	we can treat this like the destruction
 		//	of a linked list
-		xsetnode* nill = &mNill;
+		xsetnode* nill = &mRoot;
 		xsetnode* root = &mRoot;
 		xsetnode* it = (xsetnode*)root->get_child(xsetnode::LEFT);
 		while ( it != nill ) 
@@ -302,21 +298,20 @@ namespace xcore
 			it = save;
 		}
 
-		root->set_parent(nill);
-		root->set_child(nill, xsetnode::LEFT);
+		mRoot.clear();
 	}
 
 	template <typename T, typename C, typename P>
 	inline xset_iterator<T,P>			xset<T,C,P>::insert(T const& item)
 	{
 		xsetnode* root     = &mRoot;
-		xsetnode* nill     = &mNill;
-		xsetnode* endNode  = root;
+		xsetnode* nill     = &mRoot;
+
 		xsetnode* lastNode = root;
 		xsetnode* curNode  = (xsetnode*)root->get_child(xsetnode::LEFT);;
 		s32 s = xsetnode::LEFT;
 		C comparer;
-		while (curNode != endNode)
+		while (curNode != nill)
 		{
 			lastNode = curNode;
 
@@ -335,7 +330,7 @@ namespace xcore
 		++mCount;
 
 #ifdef DEBUG_RBTREE
-		rb_validate(root, nill);
+		rb_test(root, nill);
 #endif
 		return xset_iterator<T,P>(mStrategy, node);
 	}
@@ -355,8 +350,9 @@ namespace xcore
 	template <typename T, typename C, typename P>
 	inline xbool			xset<T,C,P>::remove(T const& item)
 	{
-		xsetnode* nill = &mNill;
+		xsetnode* nill = &mRoot;
 		xsetnode* root = &mRoot;
+
 		xsetnode* it   = (xsetnode*)root->get_child(xsetnode::LEFT);
 		C comparer;
 		while ( it != nill )
@@ -376,30 +372,29 @@ namespace xcore
 		xsetnode* node = it;
 		ASSERT(node != root);
 
-		xsetnode* endNode = root;
 		xsetnode* repl = node;
 		s32 s = xsetnode::LEFT;
-		if (node->get_child(xsetnode::RIGHT) != endNode)
+		if (node->get_child(xsetnode::RIGHT) != nill)
 		{
-			if (node->get_child(xsetnode::LEFT) != endNode)
+			if (node->get_child(xsetnode::LEFT) != nill)
 			{
 				repl = (xsetnode*)node->get_child(xsetnode::RIGHT);
-				while (repl->get_child(xsetnode::LEFT) != endNode)
+				while (repl->get_child(xsetnode::LEFT) != nill)
 					repl = (xsetnode*)repl->get_child(xsetnode::LEFT);
 			}
 			s = xsetnode::RIGHT;
 		}
-		ASSERT(repl->get_child(1-s) == endNode);
+		ASSERT(repl->get_child(1-s) == nill);
 		bool red = repl->is_red();
 		xsetnode* replChild = (xsetnode*)repl->get_child(s);
 
 		rb_substitute_with(repl, replChild);
-		ASSERT(endNode->is_black());
+		ASSERT(nill->is_black());
 
 		if (repl != node)
 			rb_switch_with(repl, node);
 
-		ASSERT(endNode->is_black());
+		ASSERT(nill->is_black());
 
 		if (!red) 
 			rb_erase_fixup(nill, root, replChild);
@@ -408,7 +403,7 @@ namespace xcore
 		mStrategy.deallocNode(node);
 
 #ifdef DEBUG_RBTREE
-		rb_validate(root, nill);
+		rb_test(root, nill);
 #endif
 		return xTrue;
 	}
@@ -442,8 +437,8 @@ namespace xcore
 	template <typename T, typename C, typename P>
 	inline xset_iterator<T,P>	xset<T,C,P>::find(T const& key)
 	{
+		xsetnode* nill = &mRoot;
 		xsetnode* root = &mRoot;
-		xsetnode* nill = root;
 		xsetnode* it = (xsetnode*)root->get_child(xsetnode::LEFT);
 		C comparer;
 		while ( it != nill )
@@ -460,8 +455,8 @@ namespace xcore
 	template <typename T, typename C, typename P>
 	inline xset_const_iterator<T,P>	xset<T,C,P>::find(T const& key) const
 	{
+		xsetnode const* nill = &mRoot;
 		xsetnode const* root = &mRoot;
-		xsetnode const* nill = root;
 		xsetnode const* it = (xsetnode const*)root->get_child(xsetnode::LEFT);
 		C comparer;
 		while ( it != nill )
@@ -479,8 +474,8 @@ namespace xcore
 	inline xset_iterator<T,P>	xset<T,C,P>::imin()
 	{
 		// Traverse to the far left
+		xsetnode* nill = &mRoot;
 		xsetnode* root = &mRoot;
-		xsetnode* nill = root;
 		xsetnode* it = (xsetnode*)root->get_child(xsetnode::LEFT);
 		xsetnode* n;
 		do 
@@ -495,8 +490,8 @@ namespace xcore
 	inline xset_iterator<T,P>	xset<T,C,P>::imax()
 	{
 		// Traverse to the far right
+		xsetnode* nill = &mRoot;
 		xsetnode* root = &mRoot;
-		xsetnode* nill = root;
 		xsetnode* it = (xsetnode*)root->get_child(xsetnode::LEFT);
 		xsetnode* n;
 		do 
@@ -510,8 +505,8 @@ namespace xcore
 	template <typename T, typename C, typename P>
 	inline xset_const_iterator<T,P>	xset<T,C,P>::imin() const
 	{
+		xsetnode const* nill = &mRoot;
 		xsetnode const* root = &mRoot;
-		xsetnode const* nill = root;
 		xsetnode const* it = (xsetnode const*)root->get_child(xsetnode::LEFT);
 		xsetnode* n;
 		do 
@@ -525,8 +520,8 @@ namespace xcore
 	template <typename T, typename C, typename P>
 	inline xset_const_iterator<T,P>	xset<T,C,P>::imax() const
 	{
+		xsetnode const* nill = &mRoot;
 		xsetnode const* root = &mRoot;
-		xsetnode const* nill = root;
 		xsetnode const* it = (xsetnode const*)root->get_child(xsetnode::LEFT);
 		xsetnode* n;
 		do 
@@ -546,8 +541,8 @@ namespace xcore
 	template <typename T, typename C, typename P>
 	inline xset_iterator<T,P>	xset<T,C,P>::end()
 	{
-		xsetnode* nil = &mRoot;
-		return xset_iterator<T,P>(mStrategy, nil);
+		xsetnode * nill = &mRoot;
+		return xset_iterator<T,P>(mStrategy, nill);
 	}
 
 	template <typename T, typename C, typename P>
@@ -559,8 +554,8 @@ namespace xcore
 	template <typename T, typename C, typename P>
 	inline xset_const_iterator<T,P>	xset<T,C,P>::end() const
 	{
-		xsetnode const* nil = &mRoot;
-		return xset_const_iterator<T,P>(mStrategy, nil);
+		xsetnode const* nill = &mRoot;
+		return xset_const_iterator<T,P>(mStrategy, nill);
 	}
 
 }

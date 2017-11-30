@@ -169,7 +169,7 @@ namespace xcore
 	template <typename K, typename V>
 	inline void			xmap_heap_strategy<K,V>::deallocNode(xmapnode* node)
 	{
-		xmapnode_heap* _node = (xmapnode_heap*)((u32)node - X_OFFSET_OF(xmapnode_heap, node));
+		xmapnode_heap* _node = (xmapnode_heap*)((uptr)node - X_OFFSET_OF(xmapnode_heap, node));
 		_node->~xmapnode_heap();
 		allocator->deallocate(_node);
 	}
@@ -177,28 +177,28 @@ namespace xcore
 	template <typename K, typename V>
 	inline V&				xmap_heap_strategy<K,V>::toItem(xmapnode* node)
 	{
-		xmapnode_heap* _node = (xmapnode_heap*)((u32)node - X_OFFSET_OF(xmapnode_heap, node));
+		xmapnode_heap* _node = (xmapnode_heap*)((uptr)node - X_OFFSET_OF(xmapnode_heap, node));
 		return _node->item;
 	}
 
 	template <typename K, typename V>
 	inline V const&		xmap_heap_strategy<K,V>::toItem(xmapnode const* node) const
 	{
-		xmapnode_heap const* _node = (xmapnode_heap const*)((u32)node - X_OFFSET_OF(xmapnode_heap, node));
+		xmapnode_heap const* _node = (xmapnode_heap const*)((uptr)node - X_OFFSET_OF(xmapnode_heap, node));
 		return _node->item;
 	}
 
 	template <typename K, typename V>
 	inline K&				xmap_heap_strategy<K,V>::toKey(xmapnode* node)
 	{
-		xmapnode_heap* _node = (xmapnode_heap*)((u32)node - X_OFFSET_OF(xmapnode_heap, node));
+		xmapnode_heap* _node = (xmapnode_heap*)((uptr)node - X_OFFSET_OF(xmapnode_heap, node));
 		return _node->key;
 	}
 
 	template <typename K, typename V>
 	inline K const&		xmap_heap_strategy<K,V>::toKey(xmapnode const* node) const
 	{
-		xmapnode_heap const* _node = (xmapnode_heap const*)((u32)node - X_OFFSET_OF(xmapnode_heap, node));
+		xmapnode_heap const* _node = (xmapnode_heap const*)((uptr)node - X_OFFSET_OF(xmapnode_heap, node));
 		return _node->key;
 	}
 
@@ -305,10 +305,6 @@ namespace xcore
 		, mStrategy(_policy)
 	{
 		mRoot.clear();
-		mNill.clear();
-		mRoot.set_parent(&mNill);
-		mRoot.set_left(&mNill);
-		mRoot.set_right(&mNill);
 	}
 
 	template <typename K, typename V, typename C, typename P>
@@ -317,10 +313,6 @@ namespace xcore
 		, mStrategy(m.mStrategy)
 	{
 		mRoot.clear();
-		mNill.clear();
-		mRoot.set_parent(&mNill);
-		mRoot.set_left(&mNill);
-		mRoot.set_right(&mNill);
 
 		for (const_iterator i = m.begin(); i != m.end(); ++i)
 			insert(i.key(), i.value() );
@@ -350,7 +342,7 @@ namespace xcore
 		//	Rotate away the left links so that
 		//	we can treat this like the destruction
 		//	of a linked list
-		xmapnode* nill = &mNill;
+		xmapnode* nill = &mRoot;
 		xmapnode* root = &mRoot;
 
 		xmapnode* it = (xmapnode*)root->get_child(xmapnode::LEFT);
@@ -387,7 +379,7 @@ namespace xcore
 	template <typename K, typename V, typename C, typename P>
 	inline xbool xmap<K,V,C,P>::insert(K const& key, V const& value)
 	{
-		xmapnode* nill     = &mNill;
+		xmapnode* nill     = &mRoot;
 		xmapnode* root     = &mRoot;
 
 		xmapnode* lastNode = root;
@@ -421,7 +413,7 @@ namespace xcore
 	template <typename K, typename V, typename C, typename P>
 	inline xbool xmap<K,V,C,P>::remove(K const& key)
 	{
-		xmapnode* nill = &mNill;
+		xmapnode* nill = &mRoot;
 		xmapnode* root = &mRoot;
 
 		xmapnode* it   = (xmapnode*)root->get_child(xmapnode::LEFT);
@@ -501,7 +493,7 @@ namespace xcore
 	template <typename K, typename V, typename C, typename P>
 	inline xmap_iterator<K,V,P>	xmap<K,V,C,P>::find(K const& key)
 	{
-		xmapnode* nill = &mNill;
+		xmapnode* nill = &mRoot;
 		xmapnode* root = &mRoot;
 
 		xmapnode* it = (xmapnode*)root->get_child(xmapnode::LEFT);
@@ -521,7 +513,7 @@ namespace xcore
 	template <typename K, typename V, typename C, typename P>
 	inline xmap_const_iterator<K,V,P>	xmap<K,V,C,P>::find(K const& key) const
 	{
-		xmapnode const* nill = &mNill;
+		xmapnode const* nill = &mRoot;
 		xmapnode const* root = &mRoot;
 		xmapnode const* it = (xmapnode const*)root->get_child(xmapnode::LEFT);
 		C comparer;
@@ -541,7 +533,7 @@ namespace xcore
 	inline xmap_iterator<K,V,P>	xmap<K,V,C,P>::imin()
 	{
 		// Traverse to the far left
-		xmapnode* nill = &mNill;
+		xmapnode* nill = &mRoot;
 		xmapnode* root = &mRoot;
 
 		xmapnode* it = (xmapnode*)root->get_child(xmapnode::LEFT);
@@ -558,7 +550,7 @@ namespace xcore
 	inline xmap_iterator<K,V,P>	xmap<K,V,C,P>::imax()
 	{
 		// Traverse to the far right
-		xmapnode* nill = &mNill;
+		xmapnode* nill = &mRoot;
 		xmapnode* root = &mRoot;
 		xmapnode* it = (xmapnode*)root->get_child(xmapnode::LEFT);
 		xmapnode* n;
@@ -573,7 +565,7 @@ namespace xcore
 	template <typename K, typename V, typename C, typename P>
 	inline xmap_const_iterator<K,V,P>	xmap<K,V,C,P>::imin() const
 	{
-		xmapnode const* nill = &mNill;
+		xmapnode const* nill = &mRoot;
 		xmapnode const* root = &mRoot;
 
 		xmapnode const* it = (xmapnode const*)root->get_child(xmapnode::LEFT);
@@ -589,7 +581,7 @@ namespace xcore
 	template <typename K, typename V, typename C, typename P>
 	inline xmap_const_iterator<K,V,P>	xmap<K,V,C,P>::imax() const
 	{
-		xmapnode const* nill = &mNill;
+		xmapnode const* nill = &mRoot;
 		xmapnode const* root = &mRoot;
 		xmapnode const* it = (xmapnode const*)root->get_child(xmapnode::LEFT);
 		xmapnode* n;
@@ -610,8 +602,8 @@ namespace xcore
 	template <typename K, typename V, typename C, typename P>
 	inline xmap_iterator<K,V,P>	xmap<K,V,C,P>::end()
 	{
-		xmapnode* nil = &mRoot;
-		return xmap_iterator<K,V,P>(mStrategy, nil);
+		xmapnode * nill = &mRoot;
+		return xmap_iterator<K,V,P>(mStrategy, nill);
 	}
 
 	template <typename K, typename V, typename C, typename P>
@@ -623,8 +615,8 @@ namespace xcore
 	template <typename K, typename V, typename C, typename P>
 	inline xmap_const_iterator<K,V,P>	xmap<K,V,C,P>::end() const
 	{
-		xmapnode const* nil = &mRoot;
-		return xmap_const_iterator<K,V,P>(mStrategy, nil);
+		xmapnode const* nill = &mRoot;
+		return xmap_const_iterator<K,V,P>(mStrategy, nill);
 	}
 
 	template <typename K, typename V, typename C, typename P>

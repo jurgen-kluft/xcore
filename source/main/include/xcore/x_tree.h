@@ -94,8 +94,7 @@ namespace xcore
 #endif
 
 		xrbnode*		root;
-		xrbnode*		nill;
-		xrbnode			nodes[2];
+		xrbnode			nodes[1];
 	};
 
 	struct xrbnode_multi : public xrbnode
@@ -234,7 +233,7 @@ namespace xcore
 	inline
 		bool			xrbtree::test(const char*& result)
 	{
-		if (!rb_validate(root, nill))
+		if (!rb_validate(root, root))
 		{
 			result = "invalid tree";
 			return false;
