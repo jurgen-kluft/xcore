@@ -1,7 +1,7 @@
 #include "xbase/x_allocator.h"
 #include "xcore/x_hashmap.h"
 
-#include "xunittest\xunittest.h"
+#include "xunittest/xunittest.h"
 
 using namespace xcore;
 
