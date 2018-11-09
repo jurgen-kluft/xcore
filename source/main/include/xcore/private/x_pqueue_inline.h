@@ -6,7 +6,7 @@ namespace xcore
 	template <typename T, typename P>
 	class xpqueue_heap_strategy
 	{
-		x_iallocator*	allocator;
+		xalloc*	allocator;
 
 		struct xpqueuenode_heap
 		{
@@ -17,7 +17,7 @@ namespace xcore
 			inline			xpqueuenode_heap(T const& _item, P const& _prio) : item(_item), priority(_prio) {}
 		};
 	public:
-		xpqueue_heap_strategy(x_iallocator* a);
+		xpqueue_heap_strategy(xalloc* a);
 
 		xpqueuenode*	allocNode(T const& item, P const& priority);
 		void			deallocNode(xpqueuenode* node);
@@ -36,11 +36,11 @@ namespace xcore
 	template <typename T, typename P>
 	class xpqueue_member_strategy
 	{
-		x_iallocator*	allocator;
+		xalloc*	allocator;
 		u32				item_to_node_offset;
 
 	public:
-		xpqueue_member_strategy(x_iallocator* a, u32 item_to_node_offset);
+		xpqueue_member_strategy(xalloc* a, u32 item_to_node_offset);
 
 		xpqueuenode*	allocNode(T const& item, P const& priority);
 		void			deallocNode(xpqueuenode* node);
@@ -74,7 +74,7 @@ namespace xcore
 
 
 	template <typename T, typename P>
-	inline			xpqueue_heap_strategy<T,P>::xpqueue_heap_strategy(x_iallocator* a) 
+	inline			xpqueue_heap_strategy<T,P>::xpqueue_heap_strategy(xalloc* a) 
 		: allocator(a)
 	{
 	}
@@ -125,7 +125,7 @@ namespace xcore
 
 
 	template <typename T, typename P>
-	inline			xpqueue_member_strategy<T,P>::xpqueue_member_strategy(x_iallocator* a, u32 item_to_node_offset) 
+	inline			xpqueue_member_strategy<T,P>::xpqueue_member_strategy(xalloc* a, u32 item_to_node_offset) 
 		: allocator(a)
 	{
 

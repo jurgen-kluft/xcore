@@ -1,6 +1,6 @@
 // x_stack.h - xCore stack
-#ifndef __XBASE_STACK_H__
-#define __XBASE_STACK_H__
+#ifndef __XCORE_STACK_H__
+#define __XCORE_STACK_H__
 #include "xbase/x_target.h"
 #ifdef USE_PRAGMA_ONCE 
 #pragma once 
@@ -10,54 +10,54 @@
 // INCLUDES
 //==============================================================================
 #include "xbase/x_debug.h"
-#include "xcore/x_slist.h"
 
 //==============================================================================
 // xCore namespace
 //==============================================================================
 namespace xcore
 {
-	class x_iallocator;
-	struct xlistnode;
-
-	template <typename T>
-	class xstack_heap_strategy;
-
-	template <typename T>
-	class xstack_member_strategy;
-
-	template <typename T>
-	class xstack_derive_strategy;
-
 	//------------------------------------------------------------------------------
 	// Author:
-	//		Jurgen Kluft
+	//		Virtuos
 	// Description:
-	//		The 'c' stack is build using a single linked list. This kind of stack can
-	//		be very fast in both addition and removal. Object cache locality can be high
+	//		The queue is using a double linked list. This kind of queue can be very 
+	//		fast in both addition and removal. Object cache locality can be high
 	//		when using pool allocators.
 	//
 	//------------------------------------------------------------------------------
-	template <typename T, typename P = xstack_heap_strategy<T> >
-	class xstack
+
+	class stack_t
 	{
 	public:
-							xstack();
-							xstack(P const& _policy);
-							~xstack();
+		struct node_t;
+		struct functors
+		{
+			void*			mUser;
+			node_t*			(*getnext)(void* user, node_t* n);
+			node_t*			(*getprev)(void* user, node_t* n);
+			void			(*setnext)(void* user, node_t* node, node_t* next);
+			void			(*setprev)(void* user, node_t* node, node_t* prev);
+		};
+
+		stack_t(functors fns);
+		stack_t(void* user, node_t*(*getnext)(void* user, node_t* n), node_t*(*getprev)(void* user, node_t* n), void(*setnext)(void* user, node_t* node, node_t* next), void(*setprev)(void* user, node_t* node, node_t* prev));
+		~stack_t();
 
 		u32					size() const;
 		bool				empty() const;
 		void				clear();
 
-		void				push(T const& item);
-		T const&			peek() const;
-		void				pop();
+		void				push(node_t* item);
+		bool				pop(node_t*& item);
+
+		node_t*				top() const;
+		node_t*				bottom() const;
 
 	private:
-		xlistnode			sentry;
-		u32					count;
-		P					policy;
+		functors			mFunctors;
+		node_t*				mHead;
+		node_t*				mTail;
+		u32					mCount;
 	};
 
 	//==============================================================================
@@ -67,8 +67,8 @@ namespace xcore
 
 #include "xcore/private/x_stack_inline.h"
 
+
 //==============================================================================
 // END
 //==============================================================================
-#endif    /// __XBASE_STACK_H__
-
+#endif    /// __XCORE_STACK_H__

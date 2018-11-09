@@ -2,6 +2,7 @@
 
 namespace xcore
 {
+
 #ifdef LIST_SORT
 	#define MAX_LIST_LENGTH_BITS 32
 

@@ -1,7 +1,7 @@
 // x_list.h - xCore doubly linked list
-#ifndef __XBASE_LIST_H__
-#define __XBASE_LIST_H__
-#include "xbase\x_target.h"
+#ifndef __XCORE_LIST_H__
+#define __XCORE_LIST_H__
+#include "xbase/x_target.h"
 #ifdef USE_PRAGMA_ONCE 
 #pragma once 
 #endif
@@ -9,147 +9,170 @@
 //==============================================================================
 // INCLUDES
 //==============================================================================
-#include "xbase\x_debug.h"
-#include "xbase\x_allocator.h"
+#include "xbase/x_debug.h"
+#include "xbase/x_allocator.h"
 
 //==============================================================================
 // xCore namespace
 //==============================================================================
 namespace xcore
 {
-	class x_iallocator;
+	class xalloc;
 
 	//------------------------------------------------------------------------------
 	// Author:
 	//		Virtuos
 	// Description:
-	//		This doubly linked list requires a policy. This kind of list can be very 
-	//      fast in both addition and removal since node and items can be indexed
-	//      when using array's as the source of items and nodes or using the 'member'
-	//		of item.
-	//      Object cache locality can be high when using pool allocators.
-	//
-	//      When using a heap provider the removal is slow since the item has to
-	//      be searched and cache locality can be an issue.
+	//		The queue is using a double linked list. This kind of queue can be very 
+	//		fast in both addition and removal. Object cache locality can be high
+	//		when using pool allocators.
 	//
 	//------------------------------------------------------------------------------
-	struct xdlistnode
-	{
-		inline				xdlistnode() : mNext(NULL), mPrev(NULL)			{ }
-		inline				xdlistnode(xdlistnode* next, xdlistnode* prev) : mNext(next), mPrev(prev) { }
-		inline				xdlistnode(xdlistnode const& other) : mNext(other.mNext), mPrev(other.mPrev) { }
 
-		inline bool			is_used() const									{ return mNext!=NULL; }
-		inline void			set_unused()									{ mNext=mPrev=NULL; }
-
-		inline xdlistnode*	prev() const									{ return mPrev; }
-		inline xdlistnode*	next() const									{ return mNext; }
-
-		inline void			set_prev(xdlistnode* n)							{ mPrev = n; }
-		inline void			set_next(xdlistnode* n)							{ mNext = n; }
-
-	protected:
-		xdlistnode*			mNext;
-		xdlistnode*			mPrev;
-	};
-
-	template <typename T>
-	class xlist_heap_strategy;
-
-	template <typename T>
-	class xlist_member_strategy;
-
-	template <typename T>
-	class xlist_derive_strategy;
-
-	template<typename T, typename P = xlist_heap_strategy<T> >
-	class xlist_iterator;
-
-	template<typename T, typename P = xlist_heap_strategy<T> >
-	class xlist_const_iterator;
-
-	template <typename T, typename P = xlist_heap_strategy<T> >
-	class xlist
+	class list_t
 	{
 	public:
-		typedef				xlist_iterator<T, P>		iterator;
-		typedef				xlist_const_iterator<T, P>	const_iterator;
+		struct node_t;
+		struct functors
+		{
+			void*			mUser;
+			node_t*			(*getnext)(void* user, node_t* n);
+			node_t*			(*getprev)(void* user, node_t* n);
+			void(*setnext)(void* user, node_t* node, node_t* next);
+			void(*setprev)(void* user, node_t* node, node_t* prev);
+		};
 
-							xlist(P const& _policy);
-							~xlist();
+		list_t(functors fns);
+		list_t(void* user, node_t*(*getnext)(void* user, node_t* n), node_t*(*getprev)(void* user, node_t* n), void(*setnext)(void* user, node_t* node, node_t* next), void(*setprev)(void* user, node_t* node, node_t* prev));
+		~list_t();
 
 		u32					size() const;
 		bool				empty() const;
 		void				clear();
 
-		void				push_back(T const& item);
-		void				push_front(T const& item);
-		
-		iterator			iat(u32 index);
-		const_iterator		iat(u32 index) const;
+		void				push_front(node_t* item);
+		void				push_back(node_t* item);
+		bool				pop_front(node_t*& item);
+		bool				pop_back(node_t*& item);
 
-		void				insert_at(iterator iter, T const& item);
-		void				remove_at(iterator iter);
-
-		T const&			back() const;
-		T const&			front() const;
-
-		void				pop_back();
-		void				pop_front();
-
-		iterator			begin();
-		iterator			end();
-		const_iterator		begin() const;
-		const_iterator		end() const;
-
-		iterator			find(T const& item);
-		const_iterator		find(T const& item) const;
+		node_t*				front() const;
+		node_t*				back() const;
 
 	private:
-		xdlistnode			sentry;
-		u32					count;
-		P					policy;
+		functors			mFunctors;
+		node_t*				mHead;
+		node_t*				mTail;
+		u32					mCount;
 	};
-
-
-	
-	#define XLIST_PUSH_FRONT(member_next, member_prev, head, tail, to_add)		\
-							to_add->member_next = head;							\
-							to_add->member_prev = NULL;							\
-							if (head == NULL) tail = to_add;					\
-							else head->member_prev = to_add;					\
-							head = to_add
-		
-	#define XLIST_PUSH_BACK(member_next, member_prev, head, tail, to_add)		\
-							if (tail==NULL) head = to_add;						\
-							else { tail->member_next = to_add; }				\
-							to_add->member_next=NULL;							\
-							to_add->member_prev=tail;							\
-							tail = to_add
-
-	#define XLIST_INSERT_AFTER(member_next, member_prev, node, to_add)			\
-							to_add->member_next = node->member_next;			\
-							if (to_add->member_next!=NULL)						\
-								to_add->member_next->member_prev = to_add;		\
-							node->member_next = to_add;							\
-							to_add->member_prev = node
-							
-	#define XLIST_INSERT_BEFORE(member_next, member_prev, node, to_add)			\
-							to_add->member_next = node;							\
-							to_add->member_prev = node->member_prev;			\
-							node->member_prev = to_add;							\
-							if (to_add->member_prev!=NULL)						\
-								to_add->member_prev->member_next = to_add;							
 
 	//==============================================================================
 	// END xCore namespace
 	//==============================================================================
 };
 
-#include "xcore\private\x_list_inline.h"
+#include "xcore/private/x_list_inline.h"
+
+
+namespace xcore
+{
+	/*
+	This use-case shows how to create your own object that can be managed by the queue.
+	In this example next/prev are 32-bit integers and all items are actually part of
+	a c-array. This just shows how you can tweak/tune the items you want to add into
+	a queue.
+	*/
+	inline void ListUseCase()
+	{
+		struct my_item
+		{
+			enum { NULL_IDX = 0xffffffff };
+			inline	my_item() : mNext(NULL_IDX), mPrev(NULL_IDX), mItem(0.0f) {}
+			u32		mNext;
+			u32		mPrev;
+			f32		mItem;
+		};
+
+		struct my_items
+		{
+			f32						node_to_item(list_t::node_t* n)
+			{
+				my_item* item = (my_item*)n;
+				return item->mItem;
+			}
+
+			u32						node_to_idx(list_t::node_t* n)
+			{
+				if (n == NULL) return my_item::NULL_IDX;
+				my_item* item = (my_item*)n;
+				u32 idx = (item - items);
+				return idx;
+			}
+			list_t::node_t* 		idx_to_node(u32 idx)
+			{
+				if (idx == my_item::NULL_IDX) return NULL;
+				my_item* item = &items[idx];
+				return (list_t::node_t*)item;
+			}
+
+			// Interface for a double linked list node used by list_t
+			static list_t::node_t*		getnext(void* user, list_t::node_t* n)
+			{
+				if (n == NULL) return NULL;
+				my_items* items = (my_items*)user;
+				my_item* item = (my_item*)n;
+				u32 idx = item->mNext;
+				return items->idx_to_node(idx);
+			}
+			static list_t::node_t*		getprev(void* user, list_t::node_t* n)
+			{
+				if (n == NULL) return NULL;
+				my_items* items = (my_items*)user;
+				my_item* item = (my_item*)n;
+				u32 idx = item->mPrev;
+				return items->idx_to_node(idx);
+			}
+			static void					setnext(void* user, list_t::node_t* node, list_t::node_t* next)
+			{
+				my_items* items = (my_items*)user;
+				my_item* item = (my_item*)node;
+				item->mNext = items->node_to_idx(next);
+			}
+			static void					setprev(void* user, list_t::node_t* node, list_t::node_t* prev)
+			{
+				my_items* items = (my_items*)user;
+				my_item* item = (my_item*)node;
+				item->mPrev = items->node_to_idx(prev);
+			}
+
+			my_item items[100];
+		};
+
+		my_items items;
+		list_t list(&items, &items.getnext, &items.getprev, &items.setnext, &items.setprev);
+
+		// Give all items a value
+		for (u32 i = 0; i < 100; i++)
+		{
+			items.items[i].mItem = i * 3.5f;
+		}
+
+		// Add all items to the queue
+		for (u32 i = 0; i < 100; i++)
+		{
+			list.push_back(items.idx_to_node(i));
+		}
+
+		list_t::node_t* node;
+		while (list.pop_back(node))
+		{
+
+		}
+	}
+}
+
+
 
 //==============================================================================
 // END
 //==============================================================================
-#endif    /// __XBASE_LIST_H__
-
+#endif    /// __XCORE_LIST_H__

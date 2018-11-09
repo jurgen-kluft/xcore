@@ -44,18 +44,18 @@ namespace xcore
 
 	public:
 							xvector (void);
-							xvector (x_iallocator*);
-		explicit			xvector (x_iallocator*, u32 n);
-							xvector (x_iallocator*, u32 n, const T& v);
-							xvector (x_iallocator*, const xvector<T>& v);
-							xvector (x_iallocator*, const_iterator& i1, const_iterator& i2);
+							xvector (xalloc*);
+		explicit			xvector (xalloc*, u32 n);
+							xvector (xalloc*, u32 n, const T& v);
+							xvector (xalloc*, const xvector<T>& v);
+							xvector (xalloc*, const_iterator& i1, const_iterator& i2);
                             xvector (const xvector<T>& v);
 
 							~xvector (void);
 
         void                set_autoalloc(bool bAuto = true);
-		void				set_allocator(x_iallocator* a);
-		void				relocate(x_iallocator* a);
+		void				set_allocator(xalloc* a);
+		void				relocate(xalloc* a);
 		void				reserve (u32 n, bool bExact = true);
 		void				resize (u32 n, bool bExact = true);
 		u32					capacity (void) const;
@@ -105,14 +105,14 @@ namespace xcore
 		
 		bool				is_linked (void) const;
 		void				unlink (void);
-		void				copy_link (x_iallocator* allocator);
+		void				copy_link (xalloc* allocator);
 		
-		void				link (x_iallocator*, const_pointer p, u32 n);
-		void				link (x_iallocator*, pointer p, u32 n);
+		void				link (xalloc*, const_pointer p, u32 n);
+		void				link (xalloc*, pointer p, u32 n);
 		void				link (const xvector<T>& v);
 		void				link (xvector<T>& v);
-		void				link (x_iallocator*, const_pointer first, const_pointer last);
-		void				link (x_iallocator*, pointer first, pointer last);
+		void				link (xalloc*, const_pointer first, const_pointer last);
+		void				link (xalloc*, pointer first, pointer last);
 
 							operator xcmemlink (void) const;
 							operator xcmemlink (void);
