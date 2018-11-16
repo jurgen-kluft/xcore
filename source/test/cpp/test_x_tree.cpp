@@ -139,7 +139,7 @@ UNITTEST_SUITE_BEGIN(xtree)
 
 		UNITTEST_TEST(case1)
 		{
-			x_type_allocator<mynode, x_cdtor_placement_new<mynode> > node_allocator(gTestAllocator);
+			xheap<mynode> node_heap(gTestAllocator);
 			
 			xrbtree tree;
 			tree.init();
@@ -155,7 +155,7 @@ UNITTEST_SUITE_BEGIN(xtree)
 
 			for (s32 i = 0; i < 3200; ++i)
 			{
-				mynode* node = node_allocator.allocate();
+				mynode* node = xnew<mynode>(node_heap);
 				node->clear();
 				node->id = (i);
 
@@ -170,7 +170,7 @@ UNITTEST_SUITE_BEGIN(xtree)
 					{
 						CHECK_EQUAL(((mynode*)f)->id, pid);
 						CHECK_TRUE(tree.test(test_result));
-						node_allocator.deallocate((mynode*)f);
+						xdelete<>(heap, f);
 					}
 					else
 					{
@@ -195,7 +195,7 @@ UNITTEST_SUITE_BEGIN(xtree)
 					if (tree.remove(f, (void*)pid, rb_node_compare))
 					{
 						CHECK_EQUAL(((mynode*)f)->id, pid);
-						node_allocator.deallocate((mynode*)f);
+						xdelete<>(heap, f);
 					}
 					allocations[i] = 0;
 				}
@@ -207,7 +207,9 @@ UNITTEST_SUITE_BEGIN(xtree)
 			{
 				node_to_destroy = tree.clear(iterator);
 				if (node_to_destroy != NULL)
-					node_allocator.deallocate((mynode*)node_to_destroy);
+				{
+					xdelete<>(heap, node_to_destroy);
+				}
 			} while (iterator != NULL);
 		}
 
