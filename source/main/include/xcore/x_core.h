@@ -15,12 +15,12 @@
 namespace xcore
 {
 	// Forward declarations
-	class xalloc;
+	class alloc_t;
 
 	//----------------------------------------------------------------------------------------------------------------
 	// Init / Exit
 
-	extern void		x_Init(xalloc* allocator);
+	extern void		x_Init(alloc_t* allocator);
 	extern void		x_Exit();
 
 	//==============================================================================

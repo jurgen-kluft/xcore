@@ -11,7 +11,7 @@
 
 namespace xcore
 {
-	class xalloc;
+	class alloc_t;
 
 	//------------------------------------------------------------------------------
 	// Author:
@@ -33,15 +33,15 @@ namespace xcore
 
 	public:
 							array_t ();
-							array_t (xalloc*, u32 sizeofelement);
-		explicit			array_t (xalloc*, u32 sizeofelement, u32 n);
-							array_t (xalloc*, const array_t& other);
-							array_t (xalloc*, const_iterator& i1, const_iterator& i2);
+							array_t (alloc_t*, u32 sizeofelement);
+		explicit			array_t (alloc_t*, u32 sizeofelement, u32 n);
+							array_t (alloc_t*, const array_t& other);
+							array_t (alloc_t*, const_iterator& i1, const_iterator& i2);
                             array_t (const array_t& other);
 							~array_t();
 
         void                set_autoalloc(bool bAuto = true);
-		void				relocate(xalloc* a);
+		void				relocate(alloc_t* a);
 
 		void				reserve (u32 n, bool bExact = true);
 		void				resize (u32 n, bool bExact = true);
@@ -124,7 +124,7 @@ namespace xcore
 		iterator			erase_space(iterator& ip, u32 n);
 
 	private:
-		xalloc *			m_Allocator;
+		alloc_t *			m_Allocator;
 		bool                m_AutoAlloc;										// Flag to indicate whether auto reserve memory when push back
 		u32					m_ItemSize;											// Item size, aligned
 		u32					m_ItemReserved;										// Number of reserved items
@@ -143,7 +143,7 @@ namespace xcore
 
 	}
 
-	array_t::array_t(xalloc* allocator, u32 sizeofelement)
+	array_t::array_t(alloc_t* allocator, u32 sizeofelement)
 		: m_Allocator(allocator)
 		, m_AutoAlloc(true)
 		, m_ItemSize(sizeofelement)
@@ -153,7 +153,7 @@ namespace xcore
 	{
 	}
 	
-	array_t::array_t(xalloc* allocator, u32 n, u32 sizeofelement)
+	array_t::array_t(alloc_t* allocator, u32 n, u32 sizeofelement)
 		: m_Allocator(allocator)
 		, m_AutoAlloc(true)
 		, m_ItemSize(sizeofelement)
@@ -164,7 +164,7 @@ namespace xcore
 		reserve(n);
 	}
 
-	array_t::array_t(xalloc* allocator, const array_t& other)
+	array_t::array_t(alloc_t* allocator, const array_t& other)
 		: m_Allocator(allocator)
 		, m_AutoAlloc(other.m_ItemSize)
 		, m_ItemSize(other.m_ItemSize)
@@ -176,7 +176,7 @@ namespace xcore
 		x_memcpy(m_Data, other.m_Data, m_ItemCount * m_ItemSize);
 	}
 
-	array_t::array_t(xalloc* allocator, const_iterator& i1, const_iterator& i2)
+	array_t::array_t(alloc_t* allocator, const_iterator& i1, const_iterator& i2)
 		: m_Allocator(allocator)
 		, m_AutoAlloc(true)
 		, m_ItemSize(i1.m_ItemSize)
@@ -223,7 +223,7 @@ namespace xcore
 		m_AutoAlloc = bAuto;
 	}
 
-	void				array_t::relocate(xalloc* a)
+	void				array_t::relocate(alloc_t* a)
 	{
 		xbyte* data = (xbyte*)a->allocate(m_ItemReserved * m_ItemSize, X_ALIGNMENT_DEFAULT);
 		x_memcpy(data, m_Data, m_ItemCount * m_ItemSize);
