@@ -132,7 +132,7 @@ namespace xcore
 	}
 
 	template <typename T>
-	inline void				relocate(xalloc* a)
+	inline void				relocate(alloc_t* a)
 	{
 
 	}
@@ -323,20 +323,20 @@ namespace xcore
 	}
 
 	template <typename T>
-	inline void				xvector<T>::copy_link (xalloc* allocator)
+	inline void				xvector<T>::copy_link (alloc_t* allocator)
 	{
 		m_Data.copy_link(allocator);
 	}
 
 
 	template <typename T>
-	inline void				xvector<T>::link (xalloc*, const_pointer p, u32 n)
+	inline void				xvector<T>::link (alloc_t*, const_pointer p, u32 n)
 	{
 		m_Data.link (p, n * m_ItemSizeAligned);
 	}
 
 	template <typename T>
-	inline void				xvector<T>::link (xalloc*, pointer p, u32 n)
+	inline void				xvector<T>::link (alloc_t*, pointer p, u32 n)
 	{
 		m_Data.link (p, n * m_ItemSizeAligned);
 	}
@@ -354,13 +354,13 @@ namespace xcore
 	}
 
 	template <typename T>
-	inline void				xvector<T>::link (xalloc*, const_pointer first, const_pointer last)
+	inline void				xvector<T>::link (alloc_t*, const_pointer first, const_pointer last)
 	{ 
 		m_Data.link (first, last);
 	}
 
 	template <typename T>
-	inline void				xvector<T>::link (xalloc*, pointer first, pointer last)
+	inline void				xvector<T>::link (alloc_t*, pointer first, pointer last)
 	{ 
 		m_Data.link (first, last);
 	}
@@ -402,7 +402,7 @@ namespace xcore
 	}
 
 	template <typename T>
-	inline xvector<T>::xvector (xalloc* a)
+	inline xvector<T>::xvector (alloc_t* a)
 		: m_ItemSizeAligned(sizeof(T))
 		, m_Data (a)
         , m_IsAutoAlloc(false)
@@ -411,7 +411,7 @@ namespace xcore
 
 	/// Initializes a xvector of size \p n.
 	template <typename T>
-	inline xvector<T>::xvector (xalloc* a, u32 n)
+	inline xvector<T>::xvector (alloc_t* a, u32 n)
 		: m_ItemSizeAligned(sizeof(T))
 		, m_Data (a)
         , m_IsAutoAlloc(false)
@@ -421,7 +421,7 @@ namespace xcore
 
 	/// Copies \p n elements from \p v.
 	template <typename T>
-	xvector<T>::xvector (xalloc* a, u32 n, const T& v)
+	xvector<T>::xvector (alloc_t* a, u32 n, const T& v)
 		: m_ItemSizeAligned(sizeof(T))
 		, m_Data (a)
         , m_IsAutoAlloc(false)
@@ -432,7 +432,7 @@ namespace xcore
 
 	/// Copies \p v.
 	template <typename T>
-	xvector<T>::xvector (xalloc* a, const xvector<T>& v)
+	xvector<T>::xvector (alloc_t* a, const xvector<T>& v)
 		: m_ItemSizeAligned(sizeof(T))
 		, m_Data (a)
         , m_IsAutoAlloc(v.m_IsAutoAlloc)
@@ -451,7 +451,7 @@ namespace xcore
 
 	/// Copies range [\p i1, \p i2]
 	template <typename T>
-	xvector<T>::xvector (xalloc* a, const_iterator& i1, const_iterator& i2)
+	xvector<T>::xvector (alloc_t* a, const_iterator& i1, const_iterator& i2)
 		: m_ItemSizeAligned(sizeof(T))
 		, m_Data (a)
         , m_IsAutoAlloc(false)
@@ -470,7 +470,7 @@ namespace xcore
 	}
 
 	template <typename T>
-	inline void xvector<T>::set_allocator (xalloc* a)
+	inline void xvector<T>::set_allocator (alloc_t* a)
 	{
 		m_Data.set_allocator(a);
 	}

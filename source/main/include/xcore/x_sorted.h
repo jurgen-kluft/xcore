@@ -8,11 +8,11 @@
 namespace xcore
 {
 	// Forward declarations
-	class xalloc;
+	class alloc_t;
 
 	struct sorted_t
 	{ 
-		xalloc *	m_allocator;
+		alloc_t *	m_allocator;
 		u32			m_capacity;
 		u32			m_count;
 		u32			m_sizeof_key;
@@ -24,7 +24,7 @@ namespace xcore
 		typedef	s32	(*compare_predicate)(const void* inKey1, const void* inKey2, u32 inKeyLength);
 		compare_predicate m_comparefn;
 
-		void		make(xalloc* _allocator, u32 sizeof_key, u32 sizeof_value, u32 max_size);
+		void		make(alloc_t* _allocator, u32 sizeof_key, u32 sizeof_value, u32 max_size);
 		void		destroy();
 
 		void		clear();

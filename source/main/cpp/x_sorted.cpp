@@ -25,7 +25,7 @@ namespace xcore
 		return x_memcmp(&array->m_keys[inIndex], inItem);
 	}
 
-	void		sorted_t::make(xalloc* _allocator, u32 _sizeof_key, u32 _sizeof_value, u32 _max_size)
+	void		sorted_t::make(alloc_t* _allocator, u32 _sizeof_key, u32 _sizeof_value, u32 _max_size)
 	{
 		m_allocator = _allocator;
 		m_capacity = _max_size;

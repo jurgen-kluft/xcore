@@ -3,14 +3,14 @@
 
 namespace xcore
 {
-	static xalloc* sXBaseAllocator = NULL;
+	static alloc_t* sXBaseAllocator = NULL;
 
-	void			x_Init(xalloc* allocator)
+	void			x_Init(alloc_t* allocator)
 	{
 		sXBaseAllocator = allocator;
 	}
 
-	xalloc*			x_GetXBaseAllocator()
+	alloc_t*			x_GetXBaseAllocator()
 	{
 		return sXBaseAllocator;
 	}
